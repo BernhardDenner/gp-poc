@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-monitoring-system
+    server: {{ .Values.destination.cluster }}
+  project: {{ .Values.destination.project }}
+  source:
+    path: charts/gp-rancher-monitoring
+    repoURL: {{ .Values.source.gp-repo-url }}
+    targetRevision: {{ .Values.source.revision }}
+  syncPolicy: {}

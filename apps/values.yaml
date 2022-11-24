@@ -1,0 +1,9 @@
+# Default values for all apps
+
+destination:
+  cluster: https://kubernetes.default.svc
+  project: default
+
+source:
+  gp-repo-url: https://github.com/BernhardDenner/gp-poc.git
+  revision: HEAD
