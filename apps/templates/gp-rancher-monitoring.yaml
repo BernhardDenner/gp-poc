@@ -1,9 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: gp-rancher-monitoring
+  namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io/foreground
-  namespace: argocd
 spec:
   destination:
     namespace: cattle-monitoring-system
