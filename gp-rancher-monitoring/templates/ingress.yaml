@@ -1,4 +1,5 @@
 {{- if .Values.ingress.enabled -}}
+{{- $serviceName := .Release.name -}}
 {{- $servicePort := .Values.service.externalPort -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -22,7 +23,7 @@ spec:
           - path: /
             pathType: Prefix
             backend:
-              serviceName: {{ .Release.Name }}-grafana
+              serviceName: {{ $serviceName }}-grafana
               servicePort: {{ $servicePort }}
     {{- end -}}
   {{- if .Values.ingress.tls }}
