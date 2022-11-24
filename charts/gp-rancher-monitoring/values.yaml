@@ -20,4 +20,4 @@ rancher-monitoring:
     annotations:
       mytest: test
 
-  prometheusOperator.admissionWebhooks.failurePolicy: Ignore
+  prometheusOperator.admissionWebhooks.failurePolicy: Fail
