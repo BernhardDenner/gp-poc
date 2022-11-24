@@ -1,0 +1,21 @@
+
+ingress:
+  enabled: true
+  hosts:
+  - grafana.example.com
+
+service:
+  name: rancher-monitoring-grafana
+  externalPort: nginx-http
+
+
+rancher-monitoring:
+  prometheus:
+  
+    enabled: true
+  
+    ## Annotations for Prometheus
+    ##
+  
+    annotations:
+      mytest: test
