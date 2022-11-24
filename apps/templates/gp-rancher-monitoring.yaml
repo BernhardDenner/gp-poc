@@ -14,4 +14,9 @@ spec:
     path: charts/gp-rancher-monitoring
     repoURL: {{ .Values.source.gpRepoUrl }}
     targetRevision: {{ .Values.source.revision }}
+    helm:
+      valueFiles:
+      - profiles/{{ .Values.profile }}.yaml
+
+      values: {{ .Values.customValues }}
   syncPolicy: {}
