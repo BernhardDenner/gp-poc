@@ -1,0 +1,5 @@
+---
+rancher-monitoring:
+  prometheus:
+    annotations:
+      profile: small
