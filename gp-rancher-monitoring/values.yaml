@@ -2,7 +2,7 @@
 ingress:
   enabled: true
   hosts:
-  - grafana.example.com
+  - grafana.kind.local
 
 service:
   name: rancher-monitoring-grafana
