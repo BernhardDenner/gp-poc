@@ -8,5 +8,6 @@ source:
   gpRepoUrl: https://github.com/BernhardDenner/gp-poc.git
   revision: HEAD
 
-profile: small
-customValues: ""
+gpRancherMonitoring:
+  profile: small
+  customValues: ""

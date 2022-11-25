@@ -16,7 +16,7 @@ spec:
     targetRevision: {{ .Values.source.revision }}
     helm:
       valueFiles:
-      - profiles/{{ .Values.profile }}.yaml
+      - profiles/{{ .Values.gpRancherMonitoring.profile }}.yaml
 
-      values: {{ .Values.customValues }}
+      values: {{ .Values.gpRancherMonitoring.customValues | quote }}
   syncPolicy: {}
