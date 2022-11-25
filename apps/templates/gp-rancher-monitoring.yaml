@@ -19,4 +19,14 @@ spec:
       - profiles/{{ .Values.gpRancherMonitoring.profile }}.yaml
 
       values: {{ .Values.gpRancherMonitoring.customValues | quote }}
-  syncPolicy: {}
+  syncPolicy:
+    automated: {}
+  ignoreDifferences:
+  - group: admissionregistration.k8s.io
+    kind: MutatingWebhookConfiguration
+    jsonPointers:
+    - /webhooks/failurePolicy
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    jsonPointers:
+    - /webhooks/failurePolicy
