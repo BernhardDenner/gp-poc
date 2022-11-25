@@ -1,0 +1,13 @@
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+
+  name: logs
+spec:
+  version: 8.5.2
+  count: 1
+  elasticsearchRef:
+    name: logs

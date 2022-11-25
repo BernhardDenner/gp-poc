@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+
+  name: elastic-logs
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  destination:
+    namespace: elastic-logs
+    server: {{ .Values.destination.cluster }}
+  project: {{ .Values.destination.project }}
+  source:
+    path: charts/elastic-logs
+    repoURL: {{ .Values.source.gpRepoUrl }}
+    targetRevision: {{ .Values.source.revision }}
+  syncPolicy:
+    automated: {}

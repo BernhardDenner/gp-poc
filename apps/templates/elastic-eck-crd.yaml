@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-100"
+
+  name: elastic-eck-crd
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  destination:
+    namespace: elastic-system
+    server: {{ .Values.destination.cluster }}
+  project: {{ .Values.destination.project }}
+  source:
+    path: charts/elastic-eck-crd
+    repoURL: {{ .Values.source.gpRepoUrl }}
+    targetRevision: {{ .Values.source.revision }}
+  syncPolicy:
+    automated: {}
