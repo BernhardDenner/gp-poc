@@ -4,13 +4,13 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "40"
 
-  name: service-A
+  name: service-a
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   destination:
-    namespace: service-A
+    namespace: service-a
     server: {{ .Values.destination.cluster }}
   project: {{ .Values.destination.project }}
   source:
