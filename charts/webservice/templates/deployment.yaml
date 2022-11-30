@@ -65,7 +65,7 @@ spec:
           httpGet:
             port: web
             path: healthz/alive
-          initialDelaySeconds: 30
+          initialDelaySeconds: 40
           periodSeconds: 15
 
         readinessProbe:
@@ -73,7 +73,7 @@ spec:
             port: web
             path: healthz/ready
           periodSeconds: 5
-          initialDelaySeconds: 25
+          initialDelaySeconds: 60
 
         resources:
           requests:
