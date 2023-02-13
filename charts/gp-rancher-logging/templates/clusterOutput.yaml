@@ -19,5 +19,9 @@ spec:
     logstash_format: true
     include_timestamp: true
 
+    buffer:
+      flush_mode: "interval"
+      flush_interval: "20s"
+
 
 
