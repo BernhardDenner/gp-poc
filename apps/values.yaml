@@ -8,6 +8,13 @@ source:
   gpRepoUrl: https://github.com/BernhardDenner/gp-poc.git
   revision: HEAD
 
+# global values
+
+# cluster system_domain used to define all paas and daas service
+# ingress routes
+# e.g. - grafana.<system_domain>
+#system_domain: example.com
+
 gpRancherMonitoring:
   profile: small
   customValues: ""

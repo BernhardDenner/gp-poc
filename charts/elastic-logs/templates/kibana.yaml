@@ -11,3 +11,7 @@ spec:
   count: 1
   elasticsearchRef:
     name: logs
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
