@@ -1,0 +1,20 @@
+---
+piVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: "elastic-search"
+  namespace: "cattle-logging-system"
+spec:
+  elasticsearch:
+    host: logs-es-http.elastic-logs.svc
+    port: 9200
+    scheme: https
+    ssl_verify: false
+    user: elastic
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: logs-es-elastic-user
+          key: elastic
+
+

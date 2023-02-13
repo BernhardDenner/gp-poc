@@ -10,7 +10,7 @@ metadata:
   - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   destination:
-    namespace: elastic-logs
+    namespace: cattle-monitoring-system
     server: {{ .Values.destination.cluster }}
   project: {{ .Values.destination.project }}
   source:

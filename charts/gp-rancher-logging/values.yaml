@@ -1,0 +1,6 @@
+rancher-logging:
+  loggingOverlay:
+    spec:
+      defaultFlow:
+        globalOutputRefs:
+        - "elastic-search"
