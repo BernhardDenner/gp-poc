@@ -16,5 +16,8 @@ spec:
         secretKeyRef:
           name: logs-es-elastic-user
           key: elastic
+    logstash_format: true
+    include_timestamp: true
+
 
 
