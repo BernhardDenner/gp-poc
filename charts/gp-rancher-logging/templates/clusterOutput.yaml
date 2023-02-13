@@ -20,7 +20,6 @@ spec:
     logstash_format: true
     include_timestamp: true
 
-    index_prefix: "logs_${logindex}"
     logstash_prefix: "logs_${logindex}"
 
     buffer:
