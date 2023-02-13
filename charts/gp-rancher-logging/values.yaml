@@ -2,5 +2,9 @@ rancher-logging:
   loggingOverlay:
     spec:
       defaultFlow:
+        filters:
+        - record_modifier:
+            records:
+            - logindex: "system"
         globalOutputRefs:
         - "elastic-search"
