@@ -23,6 +23,8 @@ spec:
     logstash_prefix: "logs_${logindex}"
 
     log_es_400_reason: true
+    flatten_hashes: true
+    flatten_hashes_separator: "_"
 
     buffer:
       flush_mode: "interval"
