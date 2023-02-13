@@ -6,7 +6,7 @@ metadata:
   namespace: "cattle-logging-system"
 spec:
   elasticsearch:
-    host: logs-es-http.elastic-logs.svc
+    host: logs-es-http
     port: 9200
     scheme: https
     ssl_verify: false
