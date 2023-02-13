@@ -1,0 +1,6 @@
+dependencies:
+- name: rancher-logging
+  repository: https://raw.githubusercontent.com/rancher/charts/release-v2.7/
+  version: 101.0.0+up3.17.7
+digest: sha256:725259d2069671f2c1f8023b64117d0a0de77fbfe792a8600c268c446835bd1b
+generated: "2023-02-13T21:33:48.611655721+01:00"
