@@ -24,8 +24,10 @@ spec:
           - path: /
             pathType: Prefix
             backend:
-              serviceName: {{ $serviceName }}-grafana
-              servicePort: {{ $servicePort }}
+              service:
+                name: {{ $serviceName }}-grafana
+                port:
+                  name: {{ $servicePort }}
     {{- end -}}
   {{- if .Values.ingress.tls }}
   tls:
