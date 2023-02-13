@@ -22,6 +22,8 @@ spec:
 
     logstash_prefix: "logs_${logindex}"
 
+    log_es_400_reason: true
+
     buffer:
       flush_mode: "interval"
       flush_interval: "20s"
