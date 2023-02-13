@@ -1,5 +1,5 @@
 ---
-piVersion: logging.banzaicloud.io/v1beta1
+apiVersion: logging.banzaicloud.io/v1beta1
 kind: ClusterOutput
 metadata:
   name: "elastic-search"
