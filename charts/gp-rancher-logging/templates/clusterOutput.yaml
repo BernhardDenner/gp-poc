@@ -17,10 +17,13 @@ spec:
           name: logs-es-elastic-user
           key: elastic
 
-    logstash_format: true
     include_timestamp: true
 
-    logstash_prefix: "logs_${logindex}"
+    #logstash_format: true
+    #logstash_prefix: "logs_${logindex}"
+
+    data_stream_enable: true
+    data_stream_name: "logs_${logindex}"
 
     log_es_400_reason: true
     flatten_hashes: true
@@ -29,6 +32,7 @@ spec:
     buffer:
       flush_mode: "interval"
       flush_interval: "20s"
+      tags: "tag,time,logindex"
 
 
 
