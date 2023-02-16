@@ -10,6 +10,6 @@ spec:
   filters:
   - record_modifier:
       records:
-      - logindex: "webservice"
+      - logindex: "webservice-${record['kubernetes.namespace_name']}"
   globalOutputRefs:
     - "elastic-search"
