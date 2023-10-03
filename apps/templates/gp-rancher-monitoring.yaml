@@ -43,8 +43,8 @@ spec:
   - group: admissionregistration.k8s.io
     kind: MutatingWebhookConfiguration
     jsonPointers:
-    - /webhooks/0/failurePolicy
+    - .webhooks[].failurePolicy
   - group: admissionregistration.k8s.io
     kind: ValidatingWebhookConfiguration
-    jsonPointers:
-    - /webhooks/0/failurePolicy
+    jqPathExpressions:
+    - .webhooks[].failurePolicy
