@@ -1,4 +1,6 @@
-
+---
 replicaCount: 1
 
 syncWave: "0"
+
+secret: notsecret

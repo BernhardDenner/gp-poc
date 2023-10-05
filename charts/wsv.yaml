@@ -1,0 +1,3 @@
+---
+secret: ref+vault://k3d-mytest/test?address=http://172.21.0.2:8200/#/mykey
+

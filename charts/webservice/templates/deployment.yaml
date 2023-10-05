@@ -42,6 +42,8 @@ spec:
         name: webservice
         command: ["./run.rb"]
         env:
+        - name: SECRET
+          value: "{{ .Values.secret }}"
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -88,20 +90,3 @@ spec:
           readOnlyRootFilesystem: true
       restartPolicy: Always
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Chart.Name }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: {{ .Chart.Name }}
-spec:
-  ports:
-  - port: 8080
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    app: {{ .Chart.Name }}
-  sessionAffinity: None
-  type: ClusterIP
