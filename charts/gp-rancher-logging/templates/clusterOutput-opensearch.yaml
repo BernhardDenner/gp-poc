@@ -17,13 +17,13 @@ spec:
 
     include_timestamp: true
 
-    #logstash_format: true
-    #logstash_prefix: "logs_${logindex}"
+    logstash_format: true
+    logstash_prefix: "logs_${logindex}"
 
-    data_stream_enable: true
-    data_stream_name: "logs_${logindex}"
+    #data_stream_enable: true
+    #data_stream_name: "logs_${logindex}"
 
-    log_es_400_reason: true
+    log_os_400_reason: true
     flatten_hashes: true
     flatten_hashes_separator: "_"
 
