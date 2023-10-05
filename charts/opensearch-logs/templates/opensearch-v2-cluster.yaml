@@ -22,7 +22,7 @@ spec:
     drainDataNodes: true
   dashboards:
     tls:
-      enable: true
+      enable: false
       generate: true
     version: 2.4.0
     enable: true
@@ -41,10 +41,10 @@ spec:
       resources:
          requests:
             memory: "4Gi"
-            cpu: "1000m"
+            cpu: "1"
          limits:
             memory: "4Gi"
-            cpu: "1000m"
+            cpu: "1"
       roles:
         - "data"
         - "cluster_manager"
