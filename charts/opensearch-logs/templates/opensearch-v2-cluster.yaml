@@ -14,6 +14,7 @@ spec:
          generate: true
          perNode: true
   general:
+    setVMMaxMapCount: true`
     httpPort: 9200
     serviceName: opensearch-logs
     version: 2.4.0
