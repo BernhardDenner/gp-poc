@@ -9,7 +9,7 @@ spec:
     port: 9200
     scheme: https
     ssl_verify: false
-    user: elastic
+    user: admin
     password:
       valueFrom:
         secretKeyRef:
