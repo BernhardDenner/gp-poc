@@ -1,0 +1,36 @@
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: "opensearch"
+spec:
+  opensearch:
+    host: opensearch-logs
+    port: 9200
+    scheme: http
+    user: elastic
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: opensearch-logs-admin-password
+          key: password
+
+    include_timestamp: true
+
+    #logstash_format: true
+    #logstash_prefix: "logs_${logindex}"
+
+    data_stream_enable: true
+    data_stream_name: "logs_${logindex}"
+
+    log_es_400_reason: true
+    flatten_hashes: true
+    flatten_hashes_separator: "_"
+
+    buffer:
+      flush_mode: "interval"
+      flush_interval: "20s"
+      tags: "tag,time,logindex"
+
+
+
