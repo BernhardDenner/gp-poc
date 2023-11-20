@@ -34,6 +34,9 @@ spec:
       limits:
          memory: "512Mi"
          cpu: "200m"
+    additionalConfig:
+      opensearch_security.multitenancy.enabled: "true"
+      plugins.query.datasources.encryption.masterkey: "abf961f3bef08f8e5bff4533"
   nodePools:
     - component: masters
       replicas: 3
