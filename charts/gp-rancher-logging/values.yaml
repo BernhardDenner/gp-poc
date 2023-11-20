@@ -7,5 +7,6 @@ rancher-logging:
             records:
             - logindex: "system"
         globalOutputRefs:
-        - "elastic-search"
         - "opensearch"
+
+logDestination: opensearch

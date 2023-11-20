@@ -1,3 +1,4 @@
+{{- if eq .Values.logDestination "elastic" }}
 ---
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: ClusterOutput
@@ -34,5 +35,4 @@ spec:
       flush_interval: "20s"
       tags: "tag,time,logindex"
 
-
-
+{{- end}}
