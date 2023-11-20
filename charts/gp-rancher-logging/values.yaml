@@ -1,4 +1,8 @@
 rancher-logging:
+  images:
+    fluentd:
+      repository: ghcr.io/kube-logging/fluentd
+      tag: v1.15.3
   loggingOverlay:
     spec:
       defaultFlow:
