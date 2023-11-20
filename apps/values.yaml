@@ -15,6 +15,12 @@ source:
 # e.g. - grafana.<system_domain>
 #system_domain: example.com
 
+modules:
+  elastic:
+    enabled: false
+  opensearch:
+    enabled: true
+
 gpRancherMonitoring:
   profile: small
   customValues: ""

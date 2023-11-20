@@ -1,3 +1,4 @@
+{{- if .Values.modules.opensearch.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -38,3 +39,4 @@ spec:
     kind: ValidatingWebhookConfiguration
     jqPathExpressions:
     - .webhooks[].clientConfig.caBundle
+{{- end}}
