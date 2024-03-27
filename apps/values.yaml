@@ -20,6 +20,8 @@ modules:
     enabled: false
   opensearch:
     enabled: true
+  cloudnativepg:
+    enabled: true
 
 gpRancherMonitoring:
   profile: small
