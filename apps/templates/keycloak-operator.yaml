@@ -1,4 +1,4 @@
-{{- if .Values.modules.cloudnativepg.enabled }}
+{{- if .Values.modules.keycloak.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

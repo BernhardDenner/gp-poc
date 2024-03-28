@@ -22,6 +22,8 @@ modules:
     enabled: true
   cloudnativepg:
     enabled: true
+  keycloak:
+    enabled: true
 
 gpRancherMonitoring:
   profile: small
