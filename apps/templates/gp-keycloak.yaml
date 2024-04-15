@@ -10,13 +10,19 @@ metadata:
   - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   destination:
-    namespace: keycloak
+    namespace: keycloak-system
     server: {{ .Values.destination.cluster }}
   project: {{ .Values.destination.project }}
   source:
     path: charts/gp-keycloak
     repoURL: {{ .Values.source.gpRepoUrl }}
     targetRevision: {{ .Values.source.revision }}
+    helm:
+      valuesObject:
+        keycloak:
+          hostname: "keycloak.{{ .Values.system_domain }}"
+          adminHostname: "keycloak-admin.{{ .Values.system_domain }}"
+
   syncPolicy:
     automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
       prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
