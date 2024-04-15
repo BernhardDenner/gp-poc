@@ -13,6 +13,7 @@ spec:
     passwordSecret:
       name: keycloak-db-app
       key: password
+    database: app
   http:
     httpEnabled: true
   hostname:
