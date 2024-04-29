@@ -17,7 +17,7 @@ spec:
     setVMMaxMapCount: true
     httpPort: 9200
     serviceName: opensearch-logs
-    version: 2.11.0
+    version: 2.13.0
     pluginsList: ["repository-s3"]
     drainDataNodes: true
     additionalConfig:
@@ -26,7 +26,7 @@ spec:
     tls:
       enable: false
       generate: true
-    version: 2.11.0
+    version: 2.13.0
     enable: true
     replicas: 1
     resources:
