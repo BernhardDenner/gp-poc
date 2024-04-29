@@ -5,6 +5,10 @@ rancher-logging:
       tag: v1.15.3
   loggingOverlay:
     spec:
+      globalFilters:
+      - dedot:
+          de_dot_separator: "_"
+          de_dot_nested: true
       defaultFlow:
         filters:
         - record_modifier:
