@@ -1,10 +1,10 @@
 {{- /*
-Generated from 'scheduler' from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/a8ba97a150c75be42010c75d10b720c55e182f1a/manifests/grafana-dashboardDefinitions.yaml
+Generated from 'scheduler' from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/baf3c7a71ec9f889644231f677f8708791d38293/manifests/grafana-dashboardDefinitions.yaml
 Do not change in-place! In order to change this file first read following link:
 https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack/hack
 */ -}}
 {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
-{{- if and (or .Values.grafana.enabled .Values.grafana.forceDeployDashboards) (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.grafana.defaultDashboardsEnabled }}
+{{- if and (or .Values.grafana.enabled .Values.grafana.forceDeployDashboards) (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.grafana.defaultDashboardsEnabled (or .Values.alertmanager.enabled .Values.alertmanager.forceDeployDashboards) }}
 {{- if (include "exporter.kubeScheduler.enabled" .)}}
 apiVersion: v1
 kind: ConfigMap
@@ -544,10 +544,10 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"{{ include "exporter.kubeScheduler.jobName" . }}\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"{{ include "exporter.kubeScheduler.jobName" . }}\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
-                                "legendFormat": "{{`{{`}}verb{{`}}`}} {{`{{`}}url{{`}}`}}",
+                                "legendFormat": "{{`{{`}}verb{{`}}`}}",
                                 "refId": "A"
                             }
                         ],
@@ -651,10 +651,10 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"{{ include "exporter.kubeScheduler.jobName" . }}\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"{{ include "exporter.kubeScheduler.jobName" . }}\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
-                                "legendFormat": "{{`{{`}}verb{{`}}`}} {{`{{`}}url{{`}}`}}",
+                                "legendFormat": "{{`{{`}}verb{{`}}`}}",
                                 "refId": "A"
                             }
                         ],

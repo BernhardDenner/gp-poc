@@ -17,6 +17,9 @@ metadata:
 {{ toYaml .Values.prometheus.annotations | indent 4 }}
 {{- end }}
 spec:
+{{- if not (kindIs "invalid" .Values.prometheus.prometheusSpec.automountServiceAccountToken) }}
+  automountServiceAccountToken: {{ .Values.prometheus.prometheusSpec.automountServiceAccountToken }}
+{{- end }}
 {{- if and (not .Values.prometheus.agentMode) (or .Values.prometheus.prometheusSpec.alertingEndpoints .Values.alertmanager.enabled) }}
   alerting:
     alertmanagers:
@@ -105,13 +108,20 @@ spec:
 {{- end }}
 {{- if and (not .Values.prometheus.agentMode) .Values.prometheus.prometheusSpec.exemplars }}
   exemplars:
-  {{ toYaml .Values.prometheus.prometheusSpec.exemplars | indent 4 }}
+    {{- toYaml .Values.prometheus.prometheusSpec.exemplars | nindent 4 }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.enableFeatures }}
   enableFeatures:
 {{- range $enableFeatures := .Values.prometheus.prometheusSpec.enableFeatures }}
   - {{ tpl $enableFeatures $ }}
 {{- end }}
+{{- end }}
+{{- with .Values.prometheus.prometheusSpec.scrapeClasses }}
+  scrapeClasses:
+    {{- tpl (toYaml . | nindent 4) $ }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.scrapeFailureLogFile }}
+  scrapeFailureLogFile: {{ .Values.prometheus.prometheusSpec.scrapeFailureLogFile }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.scrapeInterval }}
   scrapeInterval: {{ .Values.prometheus.prometheusSpec.scrapeInterval }}
@@ -131,12 +141,12 @@ spec:
 {{- if .Values.prometheus.prometheusSpec.retentionSize }}
   retentionSize: {{ .Values.prometheus.prometheusSpec.retentionSize | quote }}
 {{- end }}
+{{- end }}
 {{- if .Values.prometheus.prometheusSpec.tsdb }}
   tsdb:
     {{- if .Values.prometheus.prometheusSpec.tsdb.outOfOrderTimeWindow }}
     outOfOrderTimeWindow: {{ .Values.prometheus.prometheusSpec.tsdb.outOfOrderTimeWindow }}
     {{- end }}
-{{- end }}
 {{- end }}
 {{- if eq .Values.prometheus.prometheusSpec.walCompression false }}
   walCompression: false
@@ -148,14 +158,16 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.secrets }}
   secrets:
-{{ toYaml .Values.prometheus.prometheusSpec.secrets | indent 4 }}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.secrets) . | indent 4 }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.configMaps }}
   configMaps:
-{{ toYaml .Values.prometheus.prometheusSpec.configMaps | indent 4 }}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.configMaps) . | indent 4 }}
 {{- end }}
   serviceAccountName: {{ template "kube-prometheus-stack.prometheus.serviceAccountName" . }}
-{{- if .Values.prometheus.prometheusSpec.serviceMonitorSelector }}
+{{- if.Values.prometheus.disableServiceDiscovery }}
+  serviceMonitorSelect : null
+{{- else if .Values.prometheus.prometheusSpec.serviceMonitorSelector }}
   serviceMonitorSelector:
 {{ tpl (toYaml .Values.prometheus.prometheusSpec.serviceMonitorSelector | indent 4) . }}
 {{ else if .Values.prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues  }}
@@ -171,7 +183,9 @@ spec:
 {{ else }}
   serviceMonitorNamespaceSelector: {}
 {{- end }}
-{{- if .Values.prometheus.prometheusSpec.podMonitorSelector }}
+{{- if .Values.prometheus.disableServiceDiscovery }}
+  podMonitorSelector : null
+{{- else if .Values.prometheus.prometheusSpec.podMonitorSelector }}
   podMonitorSelector:
 {{ tpl (toYaml .Values.prometheus.prometheusSpec.podMonitorSelector | indent 4) . }}
 {{ else if .Values.prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues  }}
@@ -187,7 +201,9 @@ spec:
 {{ else }}
   podMonitorNamespaceSelector: {}
 {{- end }}
-{{- if .Values.prometheus.prometheusSpec.probeSelector }}
+{{- if .Values.prometheus.disableServiceDiscovery }}
+  probeSelector : null
+{{- else if .Values.prometheus.prometheusSpec.probeSelector }}
   probeSelector:
 {{ tpl (toYaml .Values.prometheus.prometheusSpec.probeSelector | indent 4) . }}
 {{ else if .Values.prometheus.prometheusSpec.probeSelectorNilUsesHelmValues  }}
@@ -250,18 +266,22 @@ spec:
   scrapeConfigSelector:
     matchLabels:
       release: {{ $.Release.Name | quote }}
-{{ else }}
+{{ else if not (kindIs "invalid" .Values.prometheus.prometheusSpec.scrapeConfigSelector) }}
   scrapeConfigSelector: {}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.scrapeConfigNamespaceSelector }}
   scrapeConfigNamespaceSelector:
 {{ tpl (toYaml .Values.prometheus.prometheusSpec.scrapeConfigNamespaceSelector | indent 4) . }}
-{{ else }}
+{{ else if not (kindIs "invalid" .Values.prometheus.prometheusSpec.scrapeConfigNamespaceSelector) }}
   scrapeConfigNamespaceSelector: {}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.storageSpec }}
   storage:
 {{ tpl (toYaml .Values.prometheus.prometheusSpec.storageSpec | indent 4) . }}
+{{- end }}
+{{- with .Values.prometheus.prometheusSpec.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+    {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.podMetadata }}
   podMetadata:
@@ -315,7 +335,7 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.enabled }}
   additionalScrapeConfigs:
-    name: {{ .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.name }}
+    name: {{ tpl (.Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.name) . }}
     key: {{ .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.key }}
 {{- end }}
 {{- if not .Values.prometheus.agentMode }}
@@ -326,7 +346,7 @@ spec:
     key: additional-alertmanager-configs.yaml
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret }}
-    name: {{ .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.name }}
+    name: {{ tpl (.Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.name) . }}
     key: {{ .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.key }}
     {{- if hasKey .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret "optional" }}
     optional: {{ .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.optional }}
@@ -340,7 +360,7 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalAlertRelabelConfigsSecret }}
   additionalAlertRelabelConfigs:
-    name: {{ .Values.prometheus.prometheusSpec.additionalAlertRelabelConfigsSecret.name }}
+    name: {{ tpl (.Values.prometheus.prometheusSpec.additionalAlertRelabelConfigsSecret.name) . }}
     key: {{ .Values.prometheus.prometheusSpec.additionalAlertRelabelConfigsSecret.key }}
 {{- end }}
 {{- end }}
@@ -358,7 +378,7 @@ spec:
 {{- if not .Values.prometheus.agentMode }}
 {{- if .Values.prometheus.prometheusSpec.thanos }}
   thanos:
-{{- with (omit .Values.prometheus.prometheusSpec.thanos "objectStorageConfig")}}
+{{- with (omit .Values.prometheus.prometheusSpec.thanos "objectStorageConfig" "secretProviderClass") }}
 {{ toYaml . | indent 4 }}
 {{- end }}
 {{- if ((.Values.prometheus.prometheusSpec.thanos.objectStorageConfig).existingSecret) }}
@@ -448,6 +468,9 @@ spec:
 {{- if and (not .Values.prometheus.agentMode) .Values.prometheus.prometheusSpec.allowOverlappingBlocks }}
   allowOverlappingBlocks: {{ .Values.prometheus.prometheusSpec.allowOverlappingBlocks }}
 {{- end }}
+{{- if .Values.prometheus.prometheusSpec.nameValidationScheme }}
+  nameValidationScheme: {{ .Values.prometheus.prometheusSpec.nameValidationScheme }}
+{{- end }}
 {{- if .Values.prometheus.prometheusSpec.minReadySeconds }}
   minReadySeconds: {{ .Values.prometheus.prometheusSpec.minReadySeconds }}
 {{- end }}
@@ -462,6 +485,9 @@ spec:
 {{- if .Values.prometheus.prometheusSpec.tracingConfig }}
   tracingConfig:
 {{ toYaml .Values.prometheus.prometheusSpec.tracingConfig | indent 4 }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.serviceDiscoveryRole }}
+  serviceDiscoveryRole: {{ .Values.prometheus.prometheusSpec.serviceDiscoveryRole }}
 {{- end }}
 {{- with .Values.prometheus.prometheusSpec.additionalConfig }}
   {{- tpl (toYaml .) $ | nindent 2 }}

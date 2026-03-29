@@ -33,6 +33,12 @@ spec:
         imagePullPolicy: {{ $.Values.global.kubectl.pullPolicy }}
         command: ["kubectl", "patch", "serviceaccount", "default", "-p", "{\"automountServiceAccountToken\": false}"]
         args: ["-n", "{{ $ns }}"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
       {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -47,13 +53,6 @@ rules:
   resources:
   - serviceaccounts
   verbs: ['get', 'patch']
-{{- if .Values.global.cattle.psp.enabled }}
-- apiGroups: ['policy']
-  resources: ['podsecuritypolicies']
-  verbs:     ['use']
-  resourceNames:
-  - {{ .Chart.Name }}-patch-sa
-{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -78,55 +77,6 @@ metadata:
   labels:
     app: {{ .Chart.Name }}-patch-sa
 ---
-{{- if .Values.global.cattle.psp.enabled }}
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: {{ .Chart.Name }}-patch-sa
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: {{ .Chart.Name }}-patch-sa
-spec:
-  privileged: false
-  hostNetwork: false
-  hostIPC: false
-  hostPID: false
-  runAsUser:
-    rule: 'MustRunAsNonRoot'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'MustRunAs'
-    ranges:
-      - min: 1
-        max: 65535
-  fsGroup:
-    rule: 'MustRunAs'
-    ranges:
-      - min: 1
-        max: 65535
-  readOnlyRootFilesystem: false
-  volumes:
-    - 'secret'
-{{- range $_, $ns := $namespaces }}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-allow-all
-  namespace: {{ $ns }}
-spec:
-  podSelector: {}
-  ingress:
-  - {}
-  egress:
-  - {}
-  policyTypes:
-  - Ingress
-  - Egress
-{{- end }}
-{{- end }}
----
 {{- if .Values.hardened.k3s.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -140,7 +90,7 @@ spec:
   - {}
   policyTypes:
   - Ingress
-  - Egress 
+  - Egress
   podSelector:
     matchLabels:
       k8s-app: kube-dns

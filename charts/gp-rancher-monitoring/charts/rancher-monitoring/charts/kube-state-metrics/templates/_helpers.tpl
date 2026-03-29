@@ -5,15 +5,6 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "monitoring_registry" -}}
-  {{- $temp_registry := (include "system_default_registry" .) -}}
-  {{- if $temp_registry -}}
-    {{- trimSuffix "/" $temp_registry -}}
-  {{- else -}}
-    {{- .Values.global.imageRegistry -}}
-  {{- end -}}
-{{- end -}}
-
 # Windows Support
 
 {{/*
@@ -104,7 +95,7 @@ app.kubernetes.io/part-of: {{ template "kube-state-metrics.name" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels }}
+{{ tpl (toYaml .Values.customLabels) . }}
 {{- end }}
 {{- if .Values.releaseLabel }}
 release: {{ .Release.Name }}
@@ -159,16 +150,20 @@ Formats imagePullSecrets. Input is (dict "Values" .Values "imagePullSecrets" .{s
 The image to use for kube-state-metrics
 */}}
 {{- define "kube-state-metrics.image" -}}
-{{- $registry := (include "monitoring_registry" .) }}
+{{- $temp_registry := (include "system_default_registry" .) }}
 {{- if .Values.image.sha }}
-{{- if $registry }}
-{{- printf "%s/%s:%s@%s" $registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
+{{- if $temp_registry }}
+{{- printf "%s%s:%s@%s" $temp_registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
+{{- else if .Values.global.imageRegistry }}
+{{- printf "%s/%s:%s@%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
 {{- else }}
 {{- printf "%s/%s:%s@%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
 {{- end }}
 {{- else }}
-{{- if $registry }}
-{{- printf "%s/%s:%s" $registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
+{{- if $temp_registry }}
+{{- printf "%s%s:%s" $temp_registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
+{{- else if .Values.global.imageRegistry }}
+{{- printf "%s/%s:%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
 {{- else }}
 {{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
 {{- end }}
@@ -179,16 +174,15 @@ The image to use for kube-state-metrics
 The image to use for kubeRBACProxy
 */}}
 {{- define "kubeRBACProxy.image" -}}
-{{- $registry := (include "monitoring_registry" .) }}
 {{- if .Values.kubeRBACProxy.image.sha }}
-{{- if $registry }}
-{{- printf "%s/%s:%s@%s" $registry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) .Values.kubeRBACProxy.image.sha }}
+{{- if .Values.global.imageRegistry }}
+{{- printf "%s/%s:%s@%s" .Values.global.imageRegistry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) .Values.kubeRBACProxy.image.sha }}
 {{- else }}
 {{- printf "%s/%s:%s@%s" .Values.kubeRBACProxy.image.registry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) .Values.kubeRBACProxy.image.sha }}
 {{- end }}
 {{- else }}
-{{- if $registry }}
-{{- printf "%s/%s:%s" $registry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) }}
+{{- if .Values.global.imageRegistry }}
+{{- printf "%s/%s:%s" .Values.global.imageRegistry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) }}
 {{- else }}
 {{- printf "%s/%s:%s" .Values.kubeRBACProxy.image.registry .Values.kubeRBACProxy.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.kubeRBACProxy.image.tag) }}
 {{- end }}

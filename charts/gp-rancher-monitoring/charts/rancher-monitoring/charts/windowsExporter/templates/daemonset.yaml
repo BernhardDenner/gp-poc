@@ -39,10 +39,14 @@ spec:
           image: {{ include "prometheus-windows-exporter.image" . }}
           command:
           - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
-          args: ["-f", "scripts/configure-firewall.ps1"]
+          args: [ "-f", "scripts/configure-firewall.ps1" ]
           volumeMounts:
             - mountPath: /scripts
               name: exporter-scripts
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -80,7 +84,7 @@ spec:
               - name: {{ $header.name }}
                 value: {{ $header.value }}
               {{- end }}
-              path: /
+              path: {{ .Values.livenessProbe.httpGet.path }}
               port: {{ .Values.service.port }}
               scheme: {{ upper .Values.livenessProbe.httpGet.scheme }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -95,7 +99,7 @@ spec:
               - name: {{ $header.name }}
                 value: {{ $header.value }}
               {{- end }}
-              path: /
+              path: {{ .Values.readinessProbe.httpGet.path }}
               port: {{ .Values.service.port }}
               scheme: {{ upper .Values.readinessProbe.httpGet.scheme }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}

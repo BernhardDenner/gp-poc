@@ -48,9 +48,9 @@ spec:
       containers:
         - name: {{ template "kube-prometheus-stack.name" . }}
           {{- $base_registry := (include "monitoring_registry" .) }}
-          {{- $configReloaderRegistry := $base_registry | default .Values.prometheusOperator.prometheusConfigReloader.image.registry -}}
-          {{- $operatorRegistry := $base_registry | default .Values.prometheusOperator.image.registry -}}
-          {{- $thanosRegistry := $base_registry | default .Values.prometheusOperator.thanosImage.registry -}}
+          {{- $configReloaderRegistry := .Values.prometheusOperator.prometheusConfigReloader.image.registry | default $base_registry -}}
+          {{- $operatorRegistry := .Values.prometheusOperator.image.registry | default $base_registry -}}
+          {{- $thanosRegistry := .Values.prometheusOperator.thanosImage.registry | default $base_registry -}}
           {{- if .Values.prometheusOperator.image.sha }}
           image: "{{ $operatorRegistry }}/{{ .Values.prometheusOperator.image.repository }}:{{ .Values.prometheusOperator.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.prometheusOperator.image.sha }}"
           {{- else }}
@@ -60,7 +60,12 @@ spec:
           args:
             {{- if .Values.prometheusOperator.kubeletService.enabled }}
             - --kubelet-service={{ .Values.prometheusOperator.kubeletService.namespace }}/{{ default $defaultKubeletSvcName .Values.prometheusOperator.kubeletService.name  }}
+            {{- if .Values.prometheusOperator.kubeletService.selector }}
+            - --kubelet-selector={{ .Values.prometheusOperator.kubeletService.selector }}
             {{- end }}
+            {{- end }}
+            - --kubelet-endpoints={{ .Values.prometheusOperator.kubeletEndpointsEnabled }}
+            - --kubelet-endpointslice={{ .Values.prometheusOperator.kubeletEndpointSliceEnabled }}
             {{- if .Values.prometheusOperator.logFormat }}
             - --log-format={{ .Values.prometheusOperator.logFormat }}
             {{- end }}
@@ -139,6 +144,14 @@ spec:
             - --web.key-file=/cert/{{ if .Values.prometheusOperator.admissionWebhooks.certManager.enabled }}tls.key{{ else }}key{{ end }}
             - --web.listen-address=:{{ .Values.prometheusOperator.tls.internalPort }}
             - --web.tls-min-version={{ .Values.prometheusOperator.tls.tlsMinVersion }}
+            {{- end }}
+            {{- with .Values.prometheusOperator.extraArgs }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- with .Values.prometheusOperator.lifecycle }}
+          lifecycle: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.prometheusOperator.tls.enabled }}
           ports:
             - containerPort: {{ .Values.prometheusOperator.tls.internalPort }}
               name: https
@@ -165,6 +178,30 @@ spec:
           {{- with .Values.prometheusOperator.extraVolumeMounts }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if .Values.prometheusOperator.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.prometheusOperator.tls.enabled | ternary "https" "http" }}
+              scheme: {{ .Values.prometheusOperator.tls.enabled | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: {{ .Values.prometheusOperator.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.prometheusOperator.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.prometheusOperator.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.prometheusOperator.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.prometheusOperator.readinessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.prometheusOperator.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.prometheusOperator.tls.enabled | ternary "https" "http" }}
+              scheme: {{ .Values.prometheusOperator.tls.enabled | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: {{ .Values.prometheusOperator.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.prometheusOperator.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.prometheusOperator.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.prometheusOperator.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.prometheusOperator.livenessProbe.failureThreshold }}
+          {{- end }}
       volumes:
         {{- if .Values.prometheusOperator.tls.enabled }}
         - name: tls-secret
@@ -190,15 +227,18 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
 {{- end }}
       nodeSelector: {{ include "linux-node-selector" . | nindent 8 }} 
-{{- with .Values.prometheusOperator.nodeSelector }}
+    {{- with .Values.prometheusOperator.nodeSelector }}
 {{ toYaml . | indent 8 }}
-{{- end }}
+    {{- end }}
     {{- with .Values.prometheusOperator.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- with .Values.prometheusOperator.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+    {{- end }}
       tolerations: {{ include "linux-node-tolerations" . | nindent 8 }} 
-{{- with .Values.prometheusOperator.tolerations }}
+    {{- with .Values.prometheusOperator.tolerations }}
 {{ toYaml . | indent 8 }}
-{{- end }}
+    {{- end }}
 {{- end }}

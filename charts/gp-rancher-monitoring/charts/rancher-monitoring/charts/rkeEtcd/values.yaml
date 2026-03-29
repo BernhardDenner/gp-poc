@@ -130,12 +130,12 @@ clients:
 
   image:
     repository: rancher/pushprox-client
-    tag: v0.1.4-rancher2-client
+    tag: v0.1.5-rancher2-client
   command: ["pushprox-client"]
 
   copyCertsImage:
     repository: rancher/mirrored-library-busybox
-    tag: 1.31.1
+    tag: 1.37.0
 
   # The default intention of rancher-pushprox clients is to scrape hostNetwork metrics across all nodes.
   # This can be used to scrape internal Kubernetes components or DaemonSets of hostNetwork Pods in
@@ -152,15 +152,15 @@ proxy:
   enabled: true
   # The port through which PushProx clients will communicate to the proxy
   port: 8080
-  
+
   # Resource limits
   resources: {}
-  
+
   # Options to select a node to run a single proxy deployment on
   nodeSelector: {}
   tolerations: []
 
   image:
     repository: rancher/pushprox-proxy
-    tag: v0.1.4-rancher2-proxy
+    tag: v0.1.5-rancher2-proxy
   command: ["pushprox-proxy"]
