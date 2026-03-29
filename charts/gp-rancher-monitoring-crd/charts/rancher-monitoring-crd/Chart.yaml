@@ -3,8 +3,8 @@ annotations:
   catalog.cattle.io/hidden: "true"
   catalog.cattle.io/namespace: cattle-monitoring-system
   catalog.cattle.io/release-name: rancher-monitoring-crd
-apiVersion: v1
+apiVersion: v2
 description: Installs the CRDs for rancher-monitoring.
 name: rancher-monitoring-crd
 type: application
-version: 101.0.0+up19.0.3
+version: 103.2.2+up57.0.3

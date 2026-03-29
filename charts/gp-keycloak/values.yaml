@@ -2,7 +2,32 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+
+# Number of Keycloak replicas to deploy
 replicaCount: 1
 
 ingress:
+  # Enable or disable ingress for Keycloak
   enabled: false
+
+resources:
+  requests:
+    # Memory request for Keycloak container
+    memory: "1Gi"
+    # CPU request for Keycloak container
+    cpu: "500m"
+  limits:
+    # Memory limit for Keycloak container
+    memory: "2Gi"
+    # CPU limit for Keycloak container
+    cpu: "1"
+
+# Arbitrary labels added to the Keycloak resource
+labels:
+  app: keycloak
+  component: keycloak
+  tier: backend
+
+
+# Arbitrary annotations added to the Keycloak resource
+annotations: {}

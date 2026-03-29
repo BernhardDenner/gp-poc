@@ -6,11 +6,13 @@ metadata:
   name: {{ template "pushProxy.client.name" . }}
   labels: {{ include "pushProxy.client.labels" . | nindent 4 }}
 rules:
+{{- if .Values.global.cattle.psp.enabled }}
 - apiGroups: ['policy']
   resources: ['podsecuritypolicies']
   verbs:     ['use']
   resourceNames:
   - {{ template "pushProxy.client.name" . }}
+{{- end }}
 {{- if and .Values.clients.https.enabled .Values.clients.https.useServiceAccountCredentials }}
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
@@ -40,6 +42,19 @@ metadata:
   namespace: {{ include "pushprox.namespace" . }}
   labels: {{ include "pushProxy.client.labels" . | nindent 4 }}
 ---
+{{- if .Values.clients.https.useServiceAccountCredentials }}
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: {{ template "pushProxy.client.serviceAccountTokenName" . }}
+  namespace: {{ include "pushprox.namespace" . }}
+  labels: {{ include "pushProxy.client.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/service-account.name: {{ template "pushProxy.client.name" . }}
+{{- end }}
+---
+{{- if .Values.global.cattle.psp.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -77,5 +92,6 @@ spec:
   allowedHostPaths:
   - pathPrefix: {{ required "Need access to volume on host with the SSL cert files to use HTTPs" .Values.clients.https.certDir }}
     readOnly: true
+{{- end }}
 {{- end }}
 {{- end }}{{- end }}

@@ -13,6 +13,24 @@ Using an instance of this chart is suitable for the following scenarios:
 
 The clients and proxy are created based on a Rancher fork of the [prometheus-community/PushProx](https://github.com/prometheus-community/PushProx) project.
 
+## Upgrading to Kubernetes v1.25+
+
+Starting in Kubernetes v1.25, [Pod Security Policies](https://kubernetes.io/docs/concepts/security/pod-security-policy/) have been removed from the Kubernetes API.
+
+As a result, **before upgrading to Kubernetes v1.25** (or on a fresh install in a Kubernetes v1.25+ cluster), users are expected to perform an in-place upgrade of this chart with `global.cattle.psp.enabled` set to `false` if it has been previously set to `true`.
+​
+> **Note:**
+> In this chart release, any previous field that was associated with any PSP resources have been removed in favor of a single global field: `global.cattle.psp.enabled`.
+
+> **Note:**
+> If you upgrade your cluster to Kubernetes v1.25+ before removing PSPs via a `helm upgrade` (even if you manually clean up resources), **it will leave the Helm release in a broken state within the cluster such that further Helm operations will not work (`helm uninstall`, `helm upgrade`, etc.).**
+>
+> If your charts get stuck in this state, please consult the Rancher docs on how to clean up your Helm release secrets.
+
+Upon setting `global.cattle.psp.enabled` to false, the chart will remove any PSP resources deployed on its behalf from the cluster. This is the default setting for this chart.
+
+As a replacement for PSPs, [Pod Security Admission](https://kubernetes.io/docs/concepts/security/pod-security-admission/) should be used. Please consult the Rancher docs for more details on how to configure your chart release namespaces to work with the new Pod Security Admission and apply Pod Security Standards.
+
 ## Configuration
 
 The following tables list the configurable parameters of the rancher-pushprox chart and their default values.
@@ -31,12 +49,21 @@ The following tables list the configurable parameters of the rancher-pushprox ch
 | ----- | ----------- | ------ |
 | `serviceMonitor.enabled` | Deploys a [Prometheus Operator](https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitor) ServiceMonitor CR that is configured to scrape metrics on the hosts that the clients are deployed on via the proxy. Also deploys a Service that points to all pods with the expected client name that exposes the `metricsPort` selected | `true` |
 | `serviceMonitor.endpoints` | A list of endpoints that will be added to the ServiceMonitor based on the [Endpoint spec](https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#endpoint) | `[{port: metrics}]` |
+| `service.selector` | The selector that is used to populate the Service's Endpoints object. The chart will error out on rendering templating if `.Values.clients.enabled` is set alongside this field, since it is expected that this service should point to the PushProx Clients Daemonset / Deployment | `{}` |
 | `clients.enabled` | Deploys a DaemonSet of clients that are each capable of scraping endpoints on the hostNetwork it is deployed on | `true` |
 | `clients.port` |  The port where the client will publish PushProx client-specific metrics. If deploying multiple clients onto the same node, the clients should not have conflicting ports | `9369` |
 | `clients.proxyUrl` | Overrides the default proxyUrl setting of `http://pushprox-{{ .Values.component }}-proxy.{{ . Release.Namespace }}.svc.cluster.local:{{ .Values.proxy.port }}"` with the `proxyUrl` specified | `""` |
 | `clients.useLocalhost` | Sets a flag on each client deployment to redirect scrapes directed to `HOST_IP` to `127.0.0.1` | `false` |
 | `clients.https.enabled` | Enables scraping metrics via HTTPS using the provided TLS certs that exist on each host | `false` |
+| `clients.https.forceHTTPSScheme` | Forces scraping metrics via HTTPS using the provided TLS certs that exist on each host | `false` |
 | `clients.https.useServiceAccountCredentials` | If set to true, the client will create a service account with permissions to scrape `/metrics` endpoint of Kubernetes components. The client will use the service account token provided to make authorized scrape requests to the Kubernetes API | `false` |
+| `clients.https.authenticationMethod.bearerTokenFile.enabled` | If set to true, the client will use service account credentials mounted at the configured path `clients.https.authenticationMethod.bearerTokenFile.bearerTokenFilePath`. This requires permissions to scrape `/metrics` endpoint of Kubernetes components. This method is deprecated by the prometheus operator and may be removed in a future release | `false` |
+| `clients.https.authenticationMethod.bearerTokenFile.bearerTokenFilePath` | This is a volume mount on the pod with permissions to scrape `/metrics` endpoint of Kubernetes components | `"/var/run/secrets/kubernetes.io/serviceaccount/token"` |
+| `clients.https.authenticationMethod.bearerTokenSecret.enabled` | If set to true, the client will use service account credentials to scrape `/metrics` endpoint of Kubernetes components. This method is deprecated by the prometheus operator and may be removed in a future release | `false` |
+| `clients.https.authenticationMethod.authorization.enabled` | If set to true, the client will use service account credentials to scrape `/metrics` endpoint of Kubernetes components | `false` |
+| `clients.https.authenticationMethod.authorization.type` | If set, the client will use this type of authorization in its client requests for metrics | `"bearer"` |
+| `clients.https.authenticationMethod.authorization.credentials.key` | If set, the client will use this key in the secret created by `clients.https.useServiceAccountCredentials` for authorization in its client requests for metrics | `"token"` |
+| `clients.https.authenticationMethod.authorization.credentials.optional` | If set to false, the client will fail if the key in the secret created by `clients.https.useServiceAccountCredentials` does not exist | `false` |
 | `clients.https.insecureSkipVerify` | If set to true, the client will disable SSL security checks | `false` |
 | `clients.https.certDir` | A `hostPath` where TLS certs can be found. This path is mounted as a volume on an `initContainer` which copies only the necessary files over to an EmptyDir volume used by each client. Required and only used if `clients.https.enabled` is set | `""` |
 | `clients.https.certFile` | The path to the TLS cert file located within `clients.https.certDir`. Required and only used if `clients.https.enabled` is set | `""` |

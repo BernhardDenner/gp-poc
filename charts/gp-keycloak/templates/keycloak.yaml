@@ -2,8 +2,34 @@ apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
   name: example-kc
+  # add configurable labels
+  labels:
+    {{- if .Values.labels }}
+    {{ .Values.labels | toYaml | nindent 4 }}
+    {{- end }}
+    app: keycloak
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    component: keycloak
+    tier: backend
+    environment: {{ .Values.environment | default "dev" }}
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/instance: example-kc
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/part-of: {{ .Values.appName }}
+  
+
+  annotations:
+    {{- if .Values.annotations }}
+{{ .Values.annotations | toYaml | nindent 4 }}
+    {{- end }}
+
 spec:
-  instances: 1
+  instances: {{ .Values.replicaCount }}
+  resources: {{ .Values.resources | toYaml | nindent 4 }}
   db:
     vendor: postgres
     host: keycloak-db-rw

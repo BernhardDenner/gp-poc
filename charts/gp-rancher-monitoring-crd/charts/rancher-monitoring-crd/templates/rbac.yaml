@@ -9,12 +9,14 @@ rules:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
-  verbs: ['create', 'get', 'patch', 'delete']
+  verbs: ['create', 'get', 'patch', 'delete', 'update', 'list']
+{{- if .Values.global.cattle.psp.enabled }}
 - apiGroups: ['policy']
   resources: ['podsecuritypolicies']
   verbs:     ['use']
   resourceNames:
   - {{ .Chart.Name }}-manager
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -39,6 +41,7 @@ metadata:
   labels:
     app: {{ .Chart.Name }}-manager
 ---
+{{- if .Values.global.cattle.psp.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -70,3 +73,4 @@ spec:
   volumes:
     - 'configMap'
     - 'secret'
+{{- end }}

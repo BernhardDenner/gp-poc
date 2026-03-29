@@ -47,11 +47,13 @@ rules:
   resources:
   - serviceaccounts
   verbs: ['get', 'patch']
+{{- if .Values.global.cattle.psp.enabled }}
 - apiGroups: ['policy']
   resources: ['podsecuritypolicies']
   verbs:     ['use']
   resourceNames:
   - {{ .Chart.Name }}-patch-sa
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -76,6 +78,7 @@ metadata:
   labels:
     app: {{ .Chart.Name }}-patch-sa
 ---
+{{- if .Values.global.cattle.psp.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -121,4 +124,24 @@ spec:
   policyTypes:
   - Ingress
   - Egress
+{{- end }}
+{{- end }}
+---
+{{- if .Values.hardened.k3s.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rancher-monitoring-coredns-allow-all
+  namespace: kube-system
+spec:
+  ingress:
+  - {}
+  egress:
+  - {}
+  policyTypes:
+  - Ingress
+  - Egress 
+  podSelector:
+    matchLabels:
+      k8s-app: kube-dns
 {{- end }}
