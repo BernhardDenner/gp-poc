@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: rancher/mirrored-kube-logging-logging-operator
-  tag: 4.8.0
+  tag: 4.10.0
   pullPolicy: IfNotPresent
 
 env: []
@@ -29,9 +29,6 @@ namespaceOverride: ""
 # -- Define annotations for logging-operator pods.
 annotations: {}
 
-# -- Deploy CRDs used by Logging Operator.
-createCustomResource: false
-
 http:
   # -- HTTP listen port number.
   port: 8080
@@ -48,7 +45,9 @@ http:
 rbac:
   # -- Create rbac service account and roles.
   enabled: true
-
+  # -- Create ClusterRole that extend the existing edit ClusterRole to interact with logging-operator CRDs
+  ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles
+  createAggregatedEditClusterRole: false
   # specify service account manually
   # serviceAccountName: custom
 
@@ -65,20 +64,21 @@ monitoring:
 ## SecurityContext holds pod-level security attributes and common container settings.
 ## This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-podSecurityContext: {}
-#  runAsNonRoot: true
-#  runAsUser: 1000
-#  fsGroup: 2000
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
 
 # -- Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/)
-securityContext: {}
-#  allowPrivilegeEscalation: false
-#  readOnlyRootFilesystem: true
-  # capabilities:
-  #   drop: ["ALL"]
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+     drop:
+       - ALL
 
 # -- Operator priorityClassName.
-priorityClassName: {}
+priorityClassName: ""
 
 serviceAccount:
   # -- Define annotations for logging-operator ServiceAccount.
@@ -97,14 +97,14 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-nodeSelector:
-  kubernetes.io/os: linux
+# -- Operator Deployment and rke/rke2/k3s additionalResources dnsConfig
+dnsConfig: {}
 
-tolerations:
-  - key: cattle.io/os
-    operator: "Equal"
-    value: "linux"
-    effect: NoSchedule
+# -- Node NodeSelectors
+nodeSelector: {}
+
+# -- Node Tolerations
+tolerations: []
 
 # -- Node Affinity
 affinity: {}
@@ -118,7 +118,7 @@ logging:
   # -- Logging resources are disabled by default
   enabled: false
 
-  # -- Reference to the logging system. Each of the loggingRefs can manage a fluentbit daemonset and a fluentd statefulset.
+  # -- Reference to the logging system. Each of the loggingRefs can manage a 1bit daemonset and a fluentd statefulset.
   loggingRef: ""
 
   # -- Disable configuration check before applying new fluentd configuration.
@@ -178,7 +178,7 @@ logging:
   allowClusterResourcesFromAllNamespaces: false
 
   # -- NodeAgent Configuration
-  nodeAgents: {}
+  nodeAgents: []
   #  - name: win-agent
   #    profile: windows
   #    nodeAgentFluentbit:
@@ -205,6 +205,9 @@ logging:
 
   # -- EnableRecreateWorkloadOnImmutableFieldChange enables the operator to recreate the fluentbit daemonset and the fluentd statefulset (and possibly other resource in the future) in case there is a change in an immutable field that otherwise couldn’t be managed with a simple update.
   enableRecreateWorkloadOnImmutableFieldChange: false
+
+  # -- EnableDockerParserCompatibilityForCRI enables Docker log format compatibility for CRI workloads.
+  enableDockerParserCompatibilityForCRI: false
 
   # -- ClusterFlows to deploy
   clusterFlows: []
@@ -242,8 +245,8 @@ logging:
       # -- imagePullSecrets of eventTailer image
       imagePullSecrets: []
     pvc:
-      # -- enable pvc for 
-      enabled: true
+      # -- enable pvc for
+      enabled: false
       # -- storage class for event tailer pvc
       accessModes:
         - ReadWriteOnce
@@ -313,7 +316,7 @@ testReceiver:
   #   requests:
   #     cpu: 20m
   #     memory: 25Mi
-  
+
   # Service definition for query http service
   service:
     type: ClusterIP
@@ -322,16 +325,6 @@ testReceiver:
     annotations: {}
     # Labels to query http service
     labels: {}
-
-# -- Extra manifests to deploy as an array
-extraManifests: []
-  # - apiVersion: v1
-  #   kind: ConfigMap
-  #   metadata:
-  #   labels:
-  #     name: extra-manifest
-  #   data:
-  #     extra-data: "value"
 
 # Logging CR specific serviceAccount annotations
 loggingServiceAccountAnnotations: {}
@@ -376,8 +369,6 @@ global:
     # set the value below to "false".
     # windows:
     #   enabled: true
-    psp:
-      enabled: false
 
   # Change the "dockerRootDirectory" if the default Docker directory has changed.
   dockerRootDirectory: ""
@@ -390,20 +381,20 @@ global:
 images:
   config_reloader:
     repository: rancher/mirrored-kube-logging-config-reloader
-    tag: v0.0.5
+    tag: v0.0.6
   fluentbit:
     repository: rancher/mirrored-fluent-fluent-bit
-    tag: 3.0.4
+    tag: 3.1.8
   nodeagent_fluentbit:
     os: "windows"
     repository: rancher/fluent-bit
-    tag: 2.2.0
+    tag: 3.1.8
   fluentbit_debug:
     repository: rancher/mirrored-fluent-fluent-bit
-    tag: 3.0.4-debug
+    tag: 3.1.8-debug
   fluentd:
     repository: rancher/mirrored-kube-logging-fluentd
-    tag: v1.16-4.8-full
+    tag: v1.16-4.10-full
 
 additionalLoggingSources:
   rke:
@@ -414,6 +405,8 @@ additionalLoggingSources:
   rke2:
     enabled: false
     stripUnderscores: false
+    kubeletLog:
+      path: "/var/lib/rancher/rke2/agent/logs/kubelet.log"
   k3s:
     enabled: false
     container_engine: "systemd"
@@ -430,13 +423,7 @@ additionalLoggingSources:
     pathPrefix: ""
     fluentbit:
       logTag: kube-audit
-      tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        value: "true"
-        effect: NoSchedule
-      - key: node-role.kubernetes.io/etcd
-        value: "true"
-        effect: NoExecute
+      tolerations: []
 
 # configures node agent options for windows node agents
 nodeAgents:
@@ -453,9 +440,15 @@ fluentd:
     initialDelaySeconds: 30
     periodSeconds: 15
   nodeSelector: {}
+  podPriorityClassName: ""
   resources: {}
-  tolerations: {}
+  tolerations: []
   env: []
+  logLevel: ""
+  metrics:
+    # Ref: https://kube-logging.dev/docs/operation/logging-operator-monitoring/
+    serviceMonitor: false
+    prometheusRules: false
 fluentbit:
   inputTail:
     Buffer_Chunk_Size: ""
@@ -463,19 +456,28 @@ fluentbit:
     Mem_Buf_Limit: ""
     Multiline_Flush: ""
     Skip_Long_Lines: ""
+  podPriorityClassName: ""
   resources: {}
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      value: "true"
-      effect: NoSchedule
-    - key: node-role.kubernetes.io/etcd
-      value: "true"
-      effect: NoExecute
+  tolerations: []
   filterKubernetes:
     Merge_Log: ""
     Merge_Log_Key: ""
     Merge_Log_Trim: ""
     Merge_Parser: ""
+  metrics:
+    # Ref: https://kube-logging.dev/docs/operation/logging-operator-monitoring/
+    serviceMonitor: false
+    prometheusRules: false
+
+# -- Extra manifests to deploy as an array
+extraManifests: []
+  # - apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #   labels:
+  #     name: extra-manifest
+  #   data:
+  #     extra-data: "value"
 
 # DO NOT SET THIS UNLESS YOU KNOW WHAT YOU ARE DOING.
 # Setting fields on this object can break rancher logging or cause unexpected behavior. It is intended to be used if you

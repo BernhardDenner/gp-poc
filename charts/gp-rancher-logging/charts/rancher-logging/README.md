@@ -26,10 +26,6 @@ This chart bootstraps a [Logging Operator](https://github.com/kube-logging/loggi
 
 - Kubernetes 1.19+
 
-## Installing CRDs
-
-Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs from the `crds` folder and from templates at the same time.
-
 ## Values
 
 | Key | Type | Default | Description |
@@ -47,7 +43,6 @@ Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs fro
 | fullnameOverride | string | `""` | A name to substitute for the full names of resources. |
 | namespaceOverride | string | `""` | A namespace override for the app. |
 | annotations | object | `{}` | Define annotations for logging-operator pods. |
-| createCustomResource | bool | `false` | Deploy CRDs used by Logging Operator. |
 | http.port | int | `8080` | HTTP listen port number. |
 | http.service | object | `{"annotations":{},"clusterIP":"None","labels":{},"type":"ClusterIP"}` | Service definition for query http service. |
 | rbac.enabled | bool | `true` | Create rbac service account and roles. |
@@ -57,13 +52,14 @@ Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs fro
 | monitoring.serviceMonitor.relabelings | list | `[]` |  |
 | podSecurityContext | object | `{}` | Pod SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) # SecurityContext holds pod-level security attributes and common container settings. # This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
 | securityContext | object | `{}` | Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) |
-| priorityClassName | object | `{}` | Operator priorityClassName. |
+| priorityClassName | string | `""` | Operator priorityClassName. |
 | serviceAccount.annotations | object | `{}` | Define annotations for logging-operator ServiceAccount. |
 | resources | object | `{}` | CPU/Memory resource requests/limits |
 | nodeSelector | object | `{}` |  |
 | tolerations | list | `[]` | Node Tolerations |
 | affinity | object | `{}` | Node Affinity |
 | podLabels | object | `{}` | Define which Nodes the Pods are scheduled on. |
+| logging | object | `{"allowClusterResourcesFromAllNamespaces":false,"clusterDomain":"cluster.local.","clusterFlows":[],"clusterOutputs":[],"controlNamespace":"","defaultFlow":{},"enableRecreateWorkloadOnImmutableFieldChange":false,"enabled":false,"errorOutputRef":"","eventTailer":{},"flowConfigCheckDisabled":false,"flowConfigOverride":"","fluentbit":{},"fluentbitDisabled":false,"fluentd":{},"fluentdDisabled":false,"globalFilters":[],"hostTailer":{},"loggingRef":"","nodeAgents":{},"skipInvalidResources":false,"syslogNG":{},"watchNamespaceSelector":{},"watchNamespaces":[]}` | Logging resources configuration. |
 | logging.enabled | bool | `false` | Logging resources are disabled by default |
 | logging.loggingRef | string | `""` | Reference to the logging system. Each of the loggingRefs can manage a fluentbit daemonset and a fluentd statefulset. |
 | logging.flowConfigCheckDisabled | bool | `false` | Disable configuration check before applying new fluentd configuration. |
@@ -82,9 +78,10 @@ Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs fro
 | logging.clusterDomain | string | `"cluster.local."` | Cluster domain name to be used when templating URLs to services |
 | logging.controlNamespace | string | `""` | Namespace for cluster wide configuration resources like ClusterFlow and ClusterOutput. This should be a protected namespace from regular users. Resources like fluentbit and fluentd will run in this namespace as well. |
 | logging.allowClusterResourcesFromAllNamespaces | bool | `false` | Allow configuration of cluster resources from any namespace. Mutually exclusive with ControlNamespace restriction of Cluster resources |
-| logging.nodeAgents | object | `{}` | NodeAgent Configuration |
+| logging.nodeAgents | list | `[]` | NodeAgent Configuration |
 | logging.configCheck | object | `{}` | configCheck provides possibility for timeout-based configuration checks https://kube-logging.dev/docs/whats-new/#timeout-based-configuration-checks |
 | logging.enableRecreateWorkloadOnImmutableFieldChange | bool | `false` | EnableRecreateWorkloadOnImmutableFieldChange enables the operator to recreate the fluentbit daemonset and the fluentd statefulset (and possibly other resource in the future) in case there is a change in an immutable field that otherwise couldn’t be managed with a simple update. |
+| logging.enableDockerParserCompatibilityForCRI | bool | `false` | EnableDockerParserCompatibilityForCRI enables Docker log format compatibility for CRI workloads. |
 | logging.clusterFlows | list | `[]` | ClusterFlows to deploy |
 | logging.clusterOutputs | list | `[]` | ClusterOutputs to deploy |
 | logging.eventTailer.enabled | bool | `false` |  |
@@ -93,7 +90,7 @@ Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs fro
 | logging.eventTailer.image.tag | string | `nil` | tag of eventTailer image |
 | logging.eventTailer.image.pullPolicy | string | `nil` | pullPolicy of eventTailer image |
 | logging.eventTailer.image.imagePullSecrets | list | `[]` | imagePullSecrets of eventTailer image |
-| logging.eventTailer.pvc.enabled | bool | `true` | enable pvc for  |
+| logging.eventTailer.pvc.enabled | bool | `true` | enable pvc for |
 | logging.eventTailer.pvc.accessModes | list | `["ReadWriteOnce"]` | storage class for event tailer pvc |
 | logging.eventTailer.pvc.volumeMode | string | `"Filesystem"` | storage class for event tailer pvc |
 | logging.eventTailer.pvc.storage | string | `"1Gi"` | storage for event tailer pvc |

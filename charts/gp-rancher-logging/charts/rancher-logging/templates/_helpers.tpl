@@ -83,7 +83,7 @@ true
 {{- end }}
 
 {{- define "windowsPathPrefix" -}}
-{{- trimSuffix "/" (default "c:\\" .Values.global.cattle.rkeWindowsPathPrefix | replace "\\" "/" | replace "//" "/" | replace "c:" "C:") -}}
+{{- trimSuffix "/" (default "c:\\" .Values.global.rkeWindowsPathPrefix | replace "\\" "/" | replace "//" "/" | replace "c:" "C:") -}}
 {{- end -}}
 
 {{- define "windowsKubernetesFilter" -}}
@@ -92,6 +92,24 @@ true
 
 {{- define "windowsInputTailMount" -}}
 {{- (include "windowsPathPrefix" .) | replace "C:" "" -}}
+{{- end -}}
+
+{{/*
+Set tolerations based on Kubernetes distribution and merge with values.yaml
+*/}}
+{{- define "customTolerations" -}}
+{{- $isRKE := .Values.additionalLoggingSources.rke.enabled -}}
+{{- $defaultTolerations := list -}}
+{{- if $isRKE }}
+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/controlplane" "operator" "Exists" "effect" "NoSchedule") -}}
+{{- else }}
+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/control-plane" "operator" "Exists" "effect" "NoSchedule") -}}
+{{- end }}
+{{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/etcd" "operator" "Exists" "effect" "NoExecute") -}}
+{{- $userTolerations := .Values.tolerations | default list -}}
+{{- $fluentbitTolerations := .Values.fluentbit.tolerations | default list -}}
+{{- $mergedTolerations := concat $defaultTolerations $userTolerations $fluentbitTolerations -}}
+{{- toYaml $mergedTolerations }}
 {{- end -}}
 
 {{/*
@@ -136,20 +154,20 @@ A shared list of custom parsers for the vairous fluentbit pods rancher creates
 [PARSER]
     Name              klog
     Format            regex
-    Regex             ^(?<level>[IWEF])(?<timestamp>\d{4} \d{2}:\d{2}:\d{2}).\d{6} +?(?<thread_id>\d+) (?<filename>.+):(?<linenumber>\d+)] (?<message>.+)
+    Regex             ^(?<level>[IWEF])(?<timestamp>\d{4} \d{2}:\d{2}:\d{2}\.\d{6}) +?(?<thread_id>\d+) (?<filename>.+?):(?<linenumber>\d+)] (?<message>.+)
     Time_Key          timestamp
-    Time_Format       %m%d %T
-
+    Time_Format       %m%d %H:%M:%S.%L
+    Time_System_timezone  On
 [PARSER]
     Name              rancher
     Format            regex
     Regex             ^time="(?<timestamp>.+)" level=(?<level>.+) msg="(?<msg>.+)"$
     Time_Key          timestamp
-    Time_Format       %FT%H:%M:%S
+    Time_Format       %FT%H:%M:%S%z
 [PARSER]
     Name              etcd
     Format            json
-    Time_Key          timestamp
+    Time_Key          ts
     Time_Format       %FT%H:%M:%S.%L
 {{- end -}}
 
@@ -157,7 +175,7 @@ A shared list of custom parsers for the vairous fluentbit pods rancher creates
 Set kubernetes log options if they are configured
 */}}
 {{- define "requireFilterKubernetes" -}}
-{{- if or .Values.fluentbit.filterKubernetes.Merge_Log .Values.fluentbit.filterKubernetes.Merge_Log_Key .Values.fluentbit.filterKubernetes.Merge_Trim .Values.fluentbit.filterKubernetes.Merge_Parser -}}
+{{- if or .Values.fluentbit.filterKubernetes.Merge_Log .Values.fluentbit.filterKubernetes.Merge_Log_Key .Values.fluentbit.filterKubernetes.Merge_Log_Trim .Values.fluentbit.filterKubernetes.Merge_Parser -}}
 true
 {{- end -}}
 {{- end -}}
@@ -193,5 +211,39 @@ Formats the cluster domain as a suffix, e.g.:
 {{- define "logging-operator.clusterDomainAsSuffix" -}}
 {{- if .Values.clusterDomain -}}
 {{- printf ".%s" .Values.clusterDomain -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Implements logic to add the loggingRef field to custom loggings based on the cluster type */}}
+{{- define "logging-operator.individualLoggingRef" -}}
+{{- with .loggingRef -}}
+loggingRef: {{ . }}
+{{- end -}}
+{{- end -}}
+
+{{/* Implements logic to add fluentd spec fields to custom loggings based on the cluster type */}}
+{{- define "logging-operator.individualFluentd" -}}
+{{- if .fluentd -}}
+{{- if .fluentd.scaling -}}
+scaling:
+    replicas: {{ .fluentd.scaling.replicas }}
+{{- end }}
+{{- with .fluentd.resources }}
+resources: {{ toYaml . | nindent 2 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Implements logic to add fluentbit loggingRef field to custom loggings based on the cluster type */}}
+{{- define "logging-operator.individualFluentbitLoggingRef" -}}
+{{- with .loggingRef -}}
+loggingRef: {{ . }}
+{{- end -}}
+{{- end -}}
+
+{{/* Implements logic to add fluentbit spec fields to custom fluentBitAgents based on the cluster type */}}
+{{- define "logging-operator.individualFluentbit" -}}
+{{- with .resources }}
+resources: {{ toYaml . | nindent 2 }}
 {{- end -}}
 {{- end -}}

@@ -3,6 +3,7 @@ apiVersion: logging.banzaicloud.io/v1beta1
 kind: Logging
 metadata:
   name: {{ include "logging-operator.releasename" . }}
+  namespace: {{ include "logging-operator.namespace" . }}
   labels:
 {{ include "logging-operator.labels" . | indent 4 }}
 spec:
@@ -53,6 +54,9 @@ spec:
   {{- end }}
   {{- with .Values.logging.enableRecreateWorkloadOnImmutableFieldChange }}
   enableRecreateWorkloadOnImmutableFieldChange: {{ . }}
+  {{- end }}
+  {{- with .Values.logging.enableDockerParserCompatibilityForCRI }}
+  enableDockerParserCompatibilityForCRI: {{ . }}
   {{- end }}
   {{- with .Values.logging.configCheck }}
   configCheck: {{- toYaml . | nindent 4 }}

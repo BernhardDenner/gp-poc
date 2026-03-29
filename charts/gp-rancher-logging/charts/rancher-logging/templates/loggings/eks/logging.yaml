@@ -1,26 +1,16 @@
 {{- define "logging-operator.logging.eks" -}}
-{{- $logPath := "/var/log/messages" -}}
+{{- $individualValues := .Values.additionalLoggingSources.eks -}}
 metadata:
   name: {{ .Release.Name }}-eks
 spec:
-  fluentbit:
-    disableKubernetesFilter: true
-    extraVolumeMounts:
-      - source: {{ $logPath }}
-        destination: {{ $logPath }}
-        readOnly: true
-    inputTail:
-      Tag: "eks"
-      Path: {{ $logPath }}
-      Parser: "syslog"
+  {{- include "logging-operator.individualLoggingRef" $individualValues | nindent 2 }}
   fluentd:
-    {{- if .Values.loggingServiceAccountAnnotations.eks }}
+    {{- include "logging-operator.individualFluentd" $individualValues | nindent 4 }}
+    {{- with .Values.loggingServiceAccountAnnotations.eks }}
     serviceAccount:
       metadata:
         annotations:
-        {{- with .Values.loggingServiceAccountAnnotations.eks }}
-        {{ toYaml . | indent 8 }}
-        {{- end }}
+        {{ toYaml . | nindent 10 }}
     {{- end }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.eks.enabled }}
