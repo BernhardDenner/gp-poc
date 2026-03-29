@@ -1,132 +1,133 @@
+# logging-operator
 
-# Logging operator Chart
+![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![kube version: >=1.22.0-0](https://img.shields.io/badge/kube%20version->=1.22.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-logging--operator-informational?style=flat-square)](https://artifacthub.io/packages/helm/kube-logging/logging-operator)
 
-[Logging operator](https://github.com/banzaicloud/logging-operator) Managed centralized logging component fluentd and fluent-bit instance on cluster.
+Logging operator for Kubernetes based on Fluentd and Fluentbit.
 
-## tl;dr:
+**Homepage:** <https://kube-logging.github.io>
+
+## TL;DR;
 
 ```bash
-$ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm repo update
-$ helm install banzaicloud-stable/logging-operator
+helm install --generate-name --wait oci://ghcr.io/kube-logging/helm-charts/logging-operator
+```
+
+or to install with a specific version:
+
+```bash
+helm install --generate-name --wait oci://ghcr.io/kube-logging/helm-charts/logging-operator --version $VERSION
 ```
 
 ## Introduction
 
-This chart bootstraps a [Logging Operator](https://github.com/banzaicloud/logging-operator) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [Logging Operator](https://github.com/kube-logging/logging-operator) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
-- Kubernetes 1.8+ with Beta APIs enabled
+- Kubernetes 1.19+
 
-## Installing the Chart
+## Installing CRDs
 
-To install the chart with the release name `my-release`:
-
-```bash
-$ helm install --name my-release banzaicloud-stable/logging-operator
-```
-
-### CRDs
 Use `createCustomResource=false` with Helm v3 to avoid trying to create CRDs from the `crds` folder and from templates at the same time.
 
-The command deploys **Logging operator** on the Kubernetes cluster with the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+## Values
 
-## Uninstalling the Chart
-
-To uninstall/delete the `my-release` deployment:
-
-```bash
-$ helm delete my-release
-```
-
-The command removes all Kubernetes components associated with the chart and deletes the release.
-
-## Configuration
-
-The following tables lists the configurable parameters of the logging-operator chart and their default values.
-
-|                      Parameter                      |                        Description                     | Default                                                               |
-| --------------------------------------------------- | ------------------------------------------------------ |-----------------------------------------------------------------------|
-| `image.repository`                                  | Container image repository                             | `ghcr.io/banzaicloud/logging-operator`                                |
-| `image.tag`                                         | Container image tag                                    | `3.17.7`                                                              |
-| `image.pullPolicy`                                  | Container pull policy                                  | `IfNotPresent`                                                        |
-| `nameOverride`                                      | Override name of app                                   | ``                                                                    |
-| `fullnameOverride`                                  | Override full name of app                              | ``                                                                    |
-| `namespaceOverride`                                 | Override namespace of app                              | ``                                                                    |
-| `watchNamespace`                                    | Namespace to watch for LoggingOperator CRD             | ``                                                                    |
-| `rbac.enabled`                                      | Create rbac service account and roles                  | `true`                                                                |
-| `rbac.psp.enabled`                                  | Must be used with `rbac.enabled` true. If true, creates & uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled.    | `false`                                                               |
-| `priorityClassName`                                 | Operator priorityClassName                             | `{}`                                                                  |
-| `affinity`                                          | Node Affinity                                          | `{}`                                                                  |
-| `resources`                                         | CPU/Memory resource requests/limits                    | `{}`                                                                  |
-| `tolerations`                                       | Node Tolerations                                       | `[]`                                                                  |
-| `nodeSelector`                                      | Define which Nodes the Pods are scheduled on.          | `{}`                                                                  |
-| `podLabels`                                         | Define custom labels for logging-operator pods         | `{}`                                                                  |
-| `annotations`                                       | Define annotations for logging-operator pods           | `{}`                                                                  |
-| `podSecurityContext`                                | Pod SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/)                                                                                             | `{"runAsNonRoot": true, "runAsUser": 1000, "fsGroup": 2000}`          |
-| `securityContext`                                   | Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) | `{"allowPrivilegeEscalation": false, "readOnlyRootFilesystem": true}` |
-| `createCustomResource`                              | Create CRDs. | `true`                                                                |
-| `monitoring.serviceMonitor.enabled`                 | Create Prometheus Operator servicemonitor. | `false`                                                               |
-| `serviceAccount.annotations`                        | Define annotations for logging-operator ServiceAccount | `{}`                                                                  |
-| `global.seLinux.enabled`                            | Add seLinuxOptions to Logging resources, requires the [rke2-selinux RPM](https://github.com/rancher/rke2-selinux/releases) | `false` |
-
-Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example:
-
-```bash
-$ helm install --name my-release -f values.yaml banzaicloud-stable/logging-operator
-```
-
-> **Tip**: You can use the default [values.yaml](values.yaml)
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| replicaCount | int | `1` |  |
+| image.repository | string | `"ghcr.io/kube-logging/logging-operator"` | Name of the image repository to pull the container image from. |
+| image.tag | string | `""` | Image tag override for the default value (chart appVersion). |
+| image.pullPolicy | string | `"IfNotPresent"` | [Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for updating already existing images on a node. |
+| env | list | `[]` |  |
+| volumes | list | `[]` |  |
+| volumeMounts | list | `[]` |  |
+| extraArgs[0] | string | `"-enable-leader-election=true"` |  |
+| imagePullSecrets | list | `[]` |  |
+| nameOverride | string | `""` | A name in place of the chart name for `app:` labels. |
+| fullnameOverride | string | `""` | A name to substitute for the full names of resources. |
+| namespaceOverride | string | `""` | A namespace override for the app. |
+| annotations | object | `{}` | Define annotations for logging-operator pods. |
+| createCustomResource | bool | `false` | Deploy CRDs used by Logging Operator. |
+| http.port | int | `8080` | HTTP listen port number. |
+| http.service | object | `{"annotations":{},"clusterIP":"None","labels":{},"type":"ClusterIP"}` | Service definition for query http service. |
+| rbac.enabled | bool | `true` | Create rbac service account and roles. |
+| monitoring.serviceMonitor.enabled | bool | `false` | Create a Prometheus Operator ServiceMonitor object. |
+| monitoring.serviceMonitor.additionalLabels | object | `{}` |  |
+| monitoring.serviceMonitor.metricRelabelings | list | `[]` |  |
+| monitoring.serviceMonitor.relabelings | list | `[]` |  |
+| podSecurityContext | object | `{}` | Pod SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) # SecurityContext holds pod-level security attributes and common container settings. # This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
+| securityContext | object | `{}` | Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) |
+| priorityClassName | object | `{}` | Operator priorityClassName. |
+| serviceAccount.annotations | object | `{}` | Define annotations for logging-operator ServiceAccount. |
+| resources | object | `{}` | CPU/Memory resource requests/limits |
+| nodeSelector | object | `{}` |  |
+| tolerations | list | `[]` | Node Tolerations |
+| affinity | object | `{}` | Node Affinity |
+| podLabels | object | `{}` | Define which Nodes the Pods are scheduled on. |
+| logging.enabled | bool | `false` | Logging resources are disabled by default |
+| logging.loggingRef | string | `""` | Reference to the logging system. Each of the loggingRefs can manage a fluentbit daemonset and a fluentd statefulset. |
+| logging.flowConfigCheckDisabled | bool | `false` | Disable configuration check before applying new fluentd configuration. |
+| logging.skipInvalidResources | bool | `false` | Whether to skip invalid Flow and ClusterFlow resources |
+| logging.flowConfigOverride | string | `""` | Override generated config. This is a raw configuration string for troubleshooting purposes. |
+| logging.fluentbitDisabled | bool | `false` | Flag to disable fluentbit completely |
+| logging.fluentbit | object | `{}` | Fluent-bit configurations https://kube-logging.github.io/docs/configuration/crds/v1beta1/fluentbit_types/ |
+| logging.fluentdDisabled | bool | `false` | Flag to disable fluentd completely |
+| logging.fluentd | object | `{}` | Fluentd configurations https://kube-logging.github.io/docs/configuration/crds/v1beta1/fluentd_types/ |
+| logging.syslogNG | object | `{}` | Syslog-NG statefulset configuration |
+| logging.defaultFlow | object | `{}` | Default flow for unmatched logs. This Flow configuration collects all logs that didn’t match any other Flow. |
+| logging.errorOutputRef | string | `""` | GlobalOutput name to flush ERROR events to |
+| logging.globalFilters | list | `[]` | Global filters to apply on logs before any match or filter mechanism. |
+| logging.watchNamespaces | list | `[]` | Limit namespaces to watch Flow and Output custom resources. |
+| logging.watchNamespaceSelector | object | `{}` | Limit namespaces to watch Flow and Output custom resources. |
+| logging.clusterDomain | string | `"cluster.local."` | Cluster domain name to be used when templating URLs to services |
+| logging.controlNamespace | string | `""` | Namespace for cluster wide configuration resources like ClusterFlow and ClusterOutput. This should be a protected namespace from regular users. Resources like fluentbit and fluentd will run in this namespace as well. |
+| logging.allowClusterResourcesFromAllNamespaces | bool | `false` | Allow configuration of cluster resources from any namespace. Mutually exclusive with ControlNamespace restriction of Cluster resources |
+| logging.nodeAgents | object | `{}` | NodeAgent Configuration |
+| logging.configCheck | object | `{}` | configCheck provides possibility for timeout-based configuration checks https://kube-logging.dev/docs/whats-new/#timeout-based-configuration-checks |
+| logging.enableRecreateWorkloadOnImmutableFieldChange | bool | `false` | EnableRecreateWorkloadOnImmutableFieldChange enables the operator to recreate the fluentbit daemonset and the fluentd statefulset (and possibly other resource in the future) in case there is a change in an immutable field that otherwise couldn’t be managed with a simple update. |
+| logging.clusterFlows | list | `[]` | ClusterFlows to deploy |
+| logging.clusterOutputs | list | `[]` | ClusterOutputs to deploy |
+| logging.eventTailer.enabled | bool | `false` |  |
+| logging.eventTailer.name | string | `"event-tailer"` |  |
+| logging.eventTailer.image.repository | string | `nil` | repository of eventTailer image |
+| logging.eventTailer.image.tag | string | `nil` | tag of eventTailer image |
+| logging.eventTailer.image.pullPolicy | string | `nil` | pullPolicy of eventTailer image |
+| logging.eventTailer.image.imagePullSecrets | list | `[]` | imagePullSecrets of eventTailer image |
+| logging.eventTailer.pvc.enabled | bool | `true` | enable pvc for  |
+| logging.eventTailer.pvc.accessModes | list | `["ReadWriteOnce"]` | storage class for event tailer pvc |
+| logging.eventTailer.pvc.volumeMode | string | `"Filesystem"` | storage class for event tailer pvc |
+| logging.eventTailer.pvc.storage | string | `"1Gi"` | storage for event tailer pvc |
+| logging.eventTailer.pvc.storageClassName | string | `nil` | storage class for event tailer pvc |
+| logging.eventTailer.workloadMetaOverrides | string | `nil` | workloadMetaOverrides |
+| logging.eventTailer.workloadOverrides | string | `nil` | workloadOverrides |
+| logging.eventTailer.containerOverrides | string | `nil` | containerOverrides |
+| logging.hostTailer.enabled | bool | `false` | HostTailer |
+| logging.hostTailer.name | string | `"hosttailer"` | name of HostTailer |
+| logging.hostTailer.image.repository | string | `nil` | repository of eventTailer image |
+| logging.hostTailer.image.tag | string | `nil` | tag of eventTailer image |
+| logging.hostTailer.image.pullPolicy | string | `nil` | pullPolicy of eventTailer image |
+| logging.hostTailer.image.imagePullSecrets | list | `[]` | imagePullSecrets of eventTailer image |
+| logging.hostTailer.workloadMetaOverrides | string | `nil` | workloadMetaOverrides of HostTailer |
+| logging.hostTailer.workloadOverrides | string | `nil` | workloadOverrides of HostTailer |
+| logging.hostTailer.fileTailers | list | `[]` | configure fileTailers of HostTailer example:   - name: sample-file     path: /var/log/sample-file     disabled: false     buffer_max_size:     buffer_chunk_size:     skip_long_lines:     read_from_head: false     containerOverrides:     image: |
+| logging.hostTailer.systemdTailers | list | `[]` | configure systemdTailers of HostTailer example:   - name: system-sample     disabled: false     systemdFilter: kubelet.service     maxEntries: 20     containerOverrides:     image: |
+| testReceiver.enabled | bool | `false` |  |
+| testReceiver.image | string | `"fluent/fluent-bit"` |  |
+| testReceiver.pullPolicy | string | `"IfNotPresent"` |  |
+| testReceiver.port | int | `8080` |  |
+| testReceiver.args[0] | string | `"-i"` |  |
+| testReceiver.args[1] | string | `"http"` |  |
+| testReceiver.args[2] | string | `"-p"` |  |
+| testReceiver.args[3] | string | `"port=8080"` |  |
+| testReceiver.args[4] | string | `"-o"` |  |
+| testReceiver.args[5] | string | `"stdout"` |  |
+| testReceiver.resources.limits.cpu | string | `"100m"` |  |
+| testReceiver.resources.limits.memory | string | `"50Mi"` |  |
+| testReceiver.resources.requests.cpu | string | `"20m"` |  |
+| testReceiver.resources.requests.memory | string | `"25Mi"` |  |
+| extraManifests | list | `[]` | Extra manifests to deploy as an array |
 
 ## Installing Fluentd and Fluent-bit via logging
 
-The previous chart does **not** install `logging` resource to deploy Fluentd and Fluent-bit on cluster. To install them please use the [Logging Operator Logging](https://github.com/banzaicloud/logging-operator/tree/master/charts/logging-operator-logging) chart.
-
-## tl;dr:
-
-```bash
-$ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm repo update
-$ helm install banzaicloud-stable/logging-operator-logging
-```
-
-## Configuration
-
-The following tables lists the configurable parameters of the logging-operator-logging chart and their default values.
-## tl;dr:
-
-```bash
-$ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm repo update
-$ helm install banzaicloud-stable/logging-operator-logging
-```
-
-## Configuration
-
-The following tables lists the configurable parameters of the logging-operator-logging chart and their default values.
-
-|                      Parameter                      |                        Description                     | Default                                                    |
-| --------------------------------------------------- | ------------------------------------------------------ |------------------------------------------------------------|
-| `tls.enabled`                                       | Enabled TLS communication between components           | true                                                       |
-| `tls.fluentdSecretName`                                    | Specified secret name, which contain tls certs         | This will overwrite automatic Helm certificate generation. |
-| `tls.fluentbitSecretName`                                    | Specified secret name, which contain tls certs         | This will overwrite automatic Helm certificate generation. |
-| `tls.sharedKey`                                     | Shared key between nodes (fluentd-fluentbit)           | [autogenerated]                                            |
-| `fluentbit.enabled`                                 | Install fluent-bit                                     | true                                                       |
-| `fluentbit.namespace`                               | Specified fluentbit installation namespace             | same as operator namespace                                 |
-| `fluentbit.image.tag`                               | Fluentbit container image tag                          | `1.9.3`                                                    |
-| `fluentbit.image.repository`                        | Fluentbit container image repository                   | `fluent/fluent-bit`                                        |
-| `fluentbit.image.pullPolicy`                        | Fluentbit container pull policy                        | `IfNotPresent`                                             |
-| `fluentd.enabled`                                   | Install fluentd                                        | true                                                       |
-| `fluentd.image.tag`                                 | Fluentd container image tag                            | `v1.14.6-alpine-5`                                         |
-| `fluentd.image.repository`                          | Fluentd container image repository                     | `ghcr.io/banzaicloud/fluentd`                              |
-| `fluentd.image.pullPolicy`                          | Fluentd container pull policy                          | `IfNotPresent`                                             |
-| `fluentd.volumeModImage.tag`                        | Fluentd volumeModImage container image tag             | `latest`                                                   |
-| `fluentd.volumeModImage.repository`                 | Fluentd volumeModImage container image repository      | `busybox`                                                  |
-| `fluentd.volumeModImage.pullPolicy`                 | Fluentd volumeModImage container pull policy           | `IfNotPresent`                                             |
-| `fluentd.configReloaderImage.tag`                   | Fluentd configReloaderImage container image tag        | `v0.2.2`                                                   |
-| `fluentd.configReloaderImage.repository`            | Fluentd configReloaderImage container image repository | `jimmidyson/configmap-reload`                              |
-| `fluentd.configReloaderImage.pullPolicy`            | Fluentd configReloaderImage container pull policy      | `IfNotPresent`                                             |
-| `fluentd.fluentdPvcSpec.accessModes`                | Fluentd persistence volume access modes                | `[ReadWriteOnce]`                                          |
-| `fluentd.fluentdPvcSpec.resources.requests.storage` | Fluentd persistence volume size                        | `21Gi`                                                     |
-| `fluentd.fluentdPvcSpec.storageClassName`           | Fluentd persistence volume storageclass                | `"""`                                                      |
+The chart does **not** install `logging` resource to deploy Fluentd (or Syslog-ng) and Fluent-bit on the cluster by default, but
+it can be enabled by setting the `logging.enabled` value to true.

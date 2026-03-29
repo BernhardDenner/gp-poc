@@ -62,7 +62,7 @@ kind: ServiceAccount
 metadata:
   name: "{{ .Release.Name }}-rke-aggregator"
   namespace: "{{ .Release.Namespace }}"
-{{- if .Values.global.psp.enabled }}
+{{- if .Values.global.cattle.psp.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

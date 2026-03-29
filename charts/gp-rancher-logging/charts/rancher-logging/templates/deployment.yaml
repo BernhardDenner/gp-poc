@@ -33,7 +33,7 @@ spec:
     {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ template "system_default_registry" . }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ template "system_default_registry" . }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           args:
           {{- range .Values.extraArgs }}
             - {{ . }}
@@ -44,10 +44,18 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.http.port }}
-
-          {{- if .Values.securityContext }}
+        {{- with .Values.env }}
+          env: {{ toYaml . | nindent 12 }}
+        {{- end }}
+        {{- if .Values.securityContext }}
           securityContext: {{ toYaml .Values.securityContext | nindent 12 }}
-          {{- end }}
+        {{- end }}
+        {{- with .Values.volumeMounts }} 
+          volumeMounts: {{ toYaml . | nindent 12 }}
+        {{- end }}
+    {{- with .Values.volumes }} 
+      volumes: {{ toYaml . | nindent 8 }}
+    {{- end }}
     {{- if .Values.podSecurityContext }}
       securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
     {{- end }}
@@ -64,6 +72,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- if .Values.rbac.enabled }}
+    {{- if .Values.rbac.serviceAccountName }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+    {{- else if .Values.rbac.enabled }}
       serviceAccountName: {{ include "logging-operator.fullname" . }}
     {{- end }}

@@ -1,4 +1,4 @@
-{{ if and .Values.rbac.enabled .Values.rbac.psp.enabled }}
+{{ if and .Values.global.cattle.psp.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:

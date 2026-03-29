@@ -31,7 +31,7 @@ spec:
             - mountPath: {{ .Values.systemdLogPath | default "/var/log/journal" }}
               name: journal
               readOnly: true
-            - mountPath: "/var/lib/rancher/rke2/agent/logs/kubelet.log"
+            - mountPath: "/var/lib/rancher/rke2/agent/logs"
               name: kubelet
               readOnly: true
             - mountPath: /etc/machine-id
@@ -53,7 +53,7 @@ spec:
             path: {{ .Values.systemdLogPath | default "/var/log/journal" }}
         - name: kubelet
           hostPath:
-            path: "/var/lib/rancher/rke2/agent/logs/kubelet.log"
+            path: "/var/lib/rancher/rke2/agent/logs"
         - name: machine-id
           hostPath:
             path: /etc/machine-id
@@ -63,7 +63,7 @@ kind: ServiceAccount
 metadata:
   name: "{{ .Release.Name }}-rke2-journald-aggregator"
   namespace: "{{ .Release.Namespace }}"
-{{- if .Values.global.psp.enabled }}
+{{- if .Values.global.cattle.psp.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

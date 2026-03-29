@@ -1,10 +1,8 @@
 {{- if .Values.rbac.enabled }}
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: {{ template "logging-operator.fullname" . }}
 rules:
 - apiGroups:
@@ -241,8 +239,12 @@ rules:
   - clusterflows
   - clusteroutputs
   - flows
+  - fluentbitagents
+  - fluentdconfigs
   - loggings
+  - nodeagents
   - outputs
+  - syslogngconfigs
   verbs:
   - create
   - delete
@@ -257,8 +259,64 @@ rules:
   - clusterflows/status
   - clusteroutputs/status
   - flows/status
+  - fluentbitagents/status
+  - fluentdconfigs/status
   - loggings/status
+  - nodeagents/status
   - outputs/status
+  - syslogngconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - logging.banzaicloud.io
+  resources:
+  - loggingroutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - logging.banzaicloud.io
+  resources:
+  - loggingroutes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - logging.banzaicloud.io
+  resources:
+  - loggings/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - logging.banzaicloud.io
+  resources:
+  - syslogngclusterflows
+  - syslogngclusteroutputs
+  - syslogngflows
+  - syslogngoutputs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - logging.banzaicloud.io
+  resources:
+  - syslogngclusterflows/status
+  - syslogngclusteroutputs/status
+  - syslogngflows/status
+  - syslogngoutputs/status
   verbs:
   - get
   - patch
@@ -268,6 +326,18 @@ rules:
   resources:
   - prometheusrules
   - servicemonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
   verbs:
   - create
   - delete
