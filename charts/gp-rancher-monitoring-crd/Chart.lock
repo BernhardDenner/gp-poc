@@ -1,6 +1,6 @@
 dependencies:
 - name: rancher-monitoring-crd
-  repository: https://raw.githubusercontent.com/rancher/charts/release-v2.8/
-  version: 103.2.2+up57.0.3
-digest: sha256:d4c84b4e3e6cd32cc8ce7fa7692659e73378854e8915183460518c0b6e9a02d3
-generated: "2026-03-29T15:13:51.594244226+02:00"
+  repository: https://raw.githubusercontent.com/rancher/charts/release-v2.12/
+  version: 107.2.2+up69.8.2-rancher.26
+digest: sha256:029b183973d13134715e0f0429565cec78f54e909f9285bbcdd99ba97eea253a
+generated: "2026-03-29T22:10:27.580490689+02:00"

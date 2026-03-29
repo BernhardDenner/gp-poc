@@ -23,3 +23,5 @@ rancher-monitoring:
   prometheusOperator:
     admissionWebhooks:
       failurePolicy: Fail
+      certManager:
+        enabled: true
