@@ -1,6 +1,6 @@
 dependencies:
 - name: rancher-logging-crd
-  repository: https://raw.githubusercontent.com/rancher/charts/release-v2.7/
-  version: 101.0.0+up3.17.7
-digest: sha256:f73ce8ba0754a2b6fc4bc3090f6f738fb0a896ec40f3684589c502cc3275e083
-generated: "2023-02-13T21:23:13.626536308+01:00"
+  repository: https://raw.githubusercontent.com/rancher/charts/release-v2.12/
+  version: 107.0.5+up4.10.0-rancher.23
+digest: sha256:8a04eadf3c57bd10579129dbe093795fc32e3773d7827ec36299dc40e14e00d2
+generated: "2026-03-29T15:57:25.227391974+02:00"

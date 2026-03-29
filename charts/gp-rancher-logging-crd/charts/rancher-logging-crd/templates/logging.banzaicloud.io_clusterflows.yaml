@@ -1,11 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.5.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.16.3
   name: clusterflows.logging.banzaicloud.io
 spec:
   group: logging.banzaicloud.io
@@ -60,7 +58,13 @@ spec:
                           type: string
                         n_lines:
                           type: integer
+                        partial_cri_logtag_key:
+                          type: string
+                        partial_cri_stream_key:
+                          type: string
                         partial_key:
+                          type: string
+                        partial_metadata_format:
                           type: string
                         partial_value:
                           type: string
@@ -71,6 +75,8 @@ spec:
                         timeout_label:
                           type: string
                         use_first_timestamp:
+                          type: boolean
+                        use_partial_cri_logtag:
                           type: boolean
                         use_partial_metadata:
                           type: string
@@ -90,6 +96,8 @@ spec:
                           items:
                             type: string
                           type: array
+                        match_tag:
+                          type: string
                         max_bytes:
                           type: integer
                         max_lines:
@@ -139,12 +147,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -155,12 +165,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         cache_refresh:
@@ -180,12 +192,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -196,12 +210,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         client_key:
@@ -213,12 +229,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -229,12 +247,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         core_api_versions:
@@ -264,11 +284,11 @@ spec:
                       properties:
                         backend_library:
                           type: string
-                        geoip_2_database:
-                          type: string
                         geoip_database:
                           type: string
                         geoip_lookup_keys:
+                          type: string
+                        geoip2_database:
                           type: string
                         records:
                           items:
@@ -386,7 +406,42 @@ spec:
                         parse:
                           properties:
                             custom_pattern_path:
-                              type: string
+                              properties:
+                                mountFrom:
+                                  properties:
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          default: ""
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                      x-kubernetes-map-type: atomic
+                                  type: object
+                                value:
+                                  type: string
+                                valueFrom:
+                                  properties:
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          default: ""
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                      x-kubernetes-map-type: atomic
+                                  type: object
+                              type: object
                             delimiter:
                               type: string
                             delimiter_pattern:
@@ -432,12 +487,12 @@ spec:
                               type: string
                             local_time:
                               type: boolean
-                            multi_line_start_regexp:
-                              type: string
                             multiline:
                               items:
                                 type: string
                               type: array
+                            multiline_start_regexp:
+                              type: string
                             null_empty_string:
                               type: boolean
                             null_value_pattern:
@@ -445,16 +500,80 @@ spec:
                             patterns:
                               items:
                                 properties:
+                                  custom_pattern_path:
+                                    properties:
+                                      mountFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                default: ""
+                                                type: string
+                                              optional:
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                        type: object
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                default: ""
+                                                type: string
+                                              optional:
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                        type: object
+                                    type: object
                                   estimate_current_event:
                                     type: boolean
                                   expression:
                                     type: string
                                   format:
                                     type: string
+                                  grok_failure_key:
+                                    type: string
+                                  grok_name_key:
+                                    type: string
+                                  grok_pattern:
+                                    type: string
+                                  grok_patterns:
+                                    items:
+                                      properties:
+                                        keep_time_key:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        pattern:
+                                          type: string
+                                        time_format:
+                                          type: string
+                                        time_key:
+                                          type: string
+                                        timezone:
+                                          type: string
+                                      required:
+                                      - pattern
+                                      type: object
+                                    type: array
                                   keep_time_key:
                                     type: boolean
                                   local_time:
                                     type: boolean
+                                  multiline_start_regexp:
+                                    type: string
                                   null_empty_string:
                                     type: boolean
                                   null_value_pattern:
@@ -494,7 +613,42 @@ spec:
                           items:
                             properties:
                               custom_pattern_path:
-                                type: string
+                                properties:
+                                  mountFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        properties:
+                                          key:
+                                            type: string
+                                          name:
+                                            default: ""
+                                            type: string
+                                          optional:
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                  value:
+                                    type: string
+                                  valueFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        properties:
+                                          key:
+                                            type: string
+                                          name:
+                                            default: ""
+                                            type: string
+                                          optional:
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                type: object
                               delimiter:
                                 type: string
                               delimiter_pattern:
@@ -540,12 +694,12 @@ spec:
                                 type: string
                               local_time:
                                 type: boolean
-                              multi_line_start_regexp:
-                                type: string
                               multiline:
                                 items:
                                   type: string
                                 type: array
+                              multiline_start_regexp:
+                                type: string
                               null_empty_string:
                                 type: boolean
                               null_value_pattern:
@@ -553,16 +707,80 @@ spec:
                               patterns:
                                 items:
                                   properties:
+                                    custom_pattern_path:
+                                      properties:
+                                        mountFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  default: ""
+                                                  type: string
+                                                optional:
+                                                  type: boolean
+                                              required:
+                                              - key
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                          type: object
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  default: ""
+                                                  type: string
+                                                optional:
+                                                  type: boolean
+                                              required:
+                                              - key
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                          type: object
+                                      type: object
                                     estimate_current_event:
                                       type: boolean
                                     expression:
                                       type: string
                                     format:
                                       type: string
+                                    grok_failure_key:
+                                      type: string
+                                    grok_name_key:
+                                      type: string
+                                    grok_pattern:
+                                      type: string
+                                    grok_patterns:
+                                      items:
+                                        properties:
+                                          keep_time_key:
+                                            type: boolean
+                                          name:
+                                            type: string
+                                          pattern:
+                                            type: string
+                                          time_format:
+                                            type: string
+                                          time_key:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                        required:
+                                        - pattern
+                                        type: object
+                                      type: array
                                     keep_time_key:
                                       type: boolean
                                     local_time:
                                       type: boolean
+                                    multiline_start_regexp:
+                                      type: string
                                     null_empty_string:
                                       type: boolean
                                     null_value_pattern:
@@ -755,6 +973,8 @@ spec:
                       properties:
                         format:
                           type: string
+                        match_tag:
+                          type: string
                       type: object
                     throttle:
                       properties:
@@ -771,12 +991,27 @@ spec:
                         group_warning_delay_s:
                           type: integer
                       type: object
+                    useragent:
+                      properties:
+                        delete_key:
+                          type: boolean
+                        flatten:
+                          type: boolean
+                        key_name:
+                          type: string
+                        out_key:
+                          type: string
+                      type: object
                   type: object
                 type: array
+              flowLabel:
+                type: string
               globalOutputRefs:
                 items:
                   type: string
                 type: array
+              includeLabelInRouter:
+                type: boolean
               loggingRef:
                 type: string
               match:
@@ -796,6 +1031,10 @@ spec:
                           additionalProperties:
                             type: string
                           type: object
+                        namespace_labels:
+                          additionalProperties:
+                            type: string
+                          type: object
                         namespaces:
                           items:
                             type: string
@@ -812,6 +1051,10 @@ spec:
                             type: string
                           type: array
                         labels:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        namespace_labels:
                           additionalProperties:
                             type: string
                           type: object
@@ -889,7 +1132,13 @@ spec:
                           type: string
                         n_lines:
                           type: integer
+                        partial_cri_logtag_key:
+                          type: string
+                        partial_cri_stream_key:
+                          type: string
                         partial_key:
+                          type: string
+                        partial_metadata_format:
                           type: string
                         partial_value:
                           type: string
@@ -900,6 +1149,8 @@ spec:
                         timeout_label:
                           type: string
                         use_first_timestamp:
+                          type: boolean
+                        use_partial_cri_logtag:
                           type: boolean
                         use_partial_metadata:
                           type: string
@@ -919,6 +1170,8 @@ spec:
                           items:
                             type: string
                           type: array
+                        match_tag:
+                          type: string
                         max_bytes:
                           type: integer
                         max_lines:
@@ -968,12 +1221,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -984,12 +1239,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         cache_refresh:
@@ -1009,12 +1266,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -1025,12 +1284,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         client_key:
@@ -1042,12 +1303,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                             value:
                               type: string
@@ -1058,12 +1321,14 @@ spec:
                                     key:
                                       type: string
                                     name:
+                                      default: ""
                                       type: string
                                     optional:
                                       type: boolean
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           type: object
                         core_api_versions:
@@ -1093,11 +1358,11 @@ spec:
                       properties:
                         backend_library:
                           type: string
-                        geoip_2_database:
-                          type: string
                         geoip_database:
                           type: string
                         geoip_lookup_keys:
+                          type: string
+                        geoip2_database:
                           type: string
                         records:
                           items:
@@ -1215,7 +1480,42 @@ spec:
                         parse:
                           properties:
                             custom_pattern_path:
-                              type: string
+                              properties:
+                                mountFrom:
+                                  properties:
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          default: ""
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                      x-kubernetes-map-type: atomic
+                                  type: object
+                                value:
+                                  type: string
+                                valueFrom:
+                                  properties:
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          default: ""
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                      x-kubernetes-map-type: atomic
+                                  type: object
+                              type: object
                             delimiter:
                               type: string
                             delimiter_pattern:
@@ -1261,12 +1561,12 @@ spec:
                               type: string
                             local_time:
                               type: boolean
-                            multi_line_start_regexp:
-                              type: string
                             multiline:
                               items:
                                 type: string
                               type: array
+                            multiline_start_regexp:
+                              type: string
                             null_empty_string:
                               type: boolean
                             null_value_pattern:
@@ -1274,16 +1574,80 @@ spec:
                             patterns:
                               items:
                                 properties:
+                                  custom_pattern_path:
+                                    properties:
+                                      mountFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                default: ""
+                                                type: string
+                                              optional:
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                        type: object
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                default: ""
+                                                type: string
+                                              optional:
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                        type: object
+                                    type: object
                                   estimate_current_event:
                                     type: boolean
                                   expression:
                                     type: string
                                   format:
                                     type: string
+                                  grok_failure_key:
+                                    type: string
+                                  grok_name_key:
+                                    type: string
+                                  grok_pattern:
+                                    type: string
+                                  grok_patterns:
+                                    items:
+                                      properties:
+                                        keep_time_key:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        pattern:
+                                          type: string
+                                        time_format:
+                                          type: string
+                                        time_key:
+                                          type: string
+                                        timezone:
+                                          type: string
+                                      required:
+                                      - pattern
+                                      type: object
+                                    type: array
                                   keep_time_key:
                                     type: boolean
                                   local_time:
                                     type: boolean
+                                  multiline_start_regexp:
+                                    type: string
                                   null_empty_string:
                                     type: boolean
                                   null_value_pattern:
@@ -1323,7 +1687,42 @@ spec:
                           items:
                             properties:
                               custom_pattern_path:
-                                type: string
+                                properties:
+                                  mountFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        properties:
+                                          key:
+                                            type: string
+                                          name:
+                                            default: ""
+                                            type: string
+                                          optional:
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                  value:
+                                    type: string
+                                  valueFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        properties:
+                                          key:
+                                            type: string
+                                          name:
+                                            default: ""
+                                            type: string
+                                          optional:
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                type: object
                               delimiter:
                                 type: string
                               delimiter_pattern:
@@ -1369,12 +1768,12 @@ spec:
                                 type: string
                               local_time:
                                 type: boolean
-                              multi_line_start_regexp:
-                                type: string
                               multiline:
                                 items:
                                   type: string
                                 type: array
+                              multiline_start_regexp:
+                                type: string
                               null_empty_string:
                                 type: boolean
                               null_value_pattern:
@@ -1382,16 +1781,80 @@ spec:
                               patterns:
                                 items:
                                   properties:
+                                    custom_pattern_path:
+                                      properties:
+                                        mountFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  default: ""
+                                                  type: string
+                                                optional:
+                                                  type: boolean
+                                              required:
+                                              - key
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                          type: object
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  default: ""
+                                                  type: string
+                                                optional:
+                                                  type: boolean
+                                              required:
+                                              - key
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                          type: object
+                                      type: object
                                     estimate_current_event:
                                       type: boolean
                                     expression:
                                       type: string
                                     format:
                                       type: string
+                                    grok_failure_key:
+                                      type: string
+                                    grok_name_key:
+                                      type: string
+                                    grok_pattern:
+                                      type: string
+                                    grok_patterns:
+                                      items:
+                                        properties:
+                                          keep_time_key:
+                                            type: boolean
+                                          name:
+                                            type: string
+                                          pattern:
+                                            type: string
+                                          time_format:
+                                            type: string
+                                          time_key:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                        required:
+                                        - pattern
+                                        type: object
+                                      type: array
                                     keep_time_key:
                                       type: boolean
                                     local_time:
                                       type: boolean
+                                    multiline_start_regexp:
+                                      type: string
                                     null_empty_string:
                                       type: boolean
                                     null_value_pattern:
@@ -1584,6 +2047,8 @@ spec:
                       properties:
                         format:
                           type: string
+                        match_tag:
+                          type: string
                       type: object
                     throttle:
                       properties:
@@ -1600,12 +2065,27 @@ spec:
                         group_warning_delay_s:
                           type: integer
                       type: object
+                    useragent:
+                      properties:
+                        delete_key:
+                          type: boolean
+                        flatten:
+                          type: boolean
+                        key_name:
+                          type: string
+                        out_key:
+                          type: string
+                      type: object
                   type: object
                 type: array
+              flowLabel:
+                type: string
               globalOutputRefs:
                 items:
                   type: string
                 type: array
+              includeLabelInRouter:
+                type: boolean
               loggingRef:
                 type: string
               match:
@@ -1625,6 +2105,10 @@ spec:
                           additionalProperties:
                             type: string
                           type: object
+                        namespace_labels:
+                          additionalProperties:
+                            type: string
+                          type: object
                         namespaces:
                           items:
                             type: string
@@ -1641,6 +2125,10 @@ spec:
                             type: string
                           type: array
                         labels:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        namespace_labels:
                           additionalProperties:
                             type: string
                           type: object
@@ -1676,9 +2164,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
